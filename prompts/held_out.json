@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "description": "Open-ended generation prompts used by 02_layer_sweep.py and 03_calibrate_coefficients.py to vibe-check steering. These are NOT contrastive — they are emotionally neutral prompts that the steered model continues. Output should differ visibly between negative and positive coefficients without going incoherent.",
+    "schema": "list of {id, prompt}",
+    "n_prompts": 8,
+    "design_notes": "Topics span small talk, reflection, recommendation, planning, and storytelling so that any one topic doesn't accidentally dominate the eyeball judgment. All prompts are short and chat-natural; none of them carry intrinsic valence."
+  },
+  "prompts": [
+    {"id": "weekend_recap", "prompt": "How was your weekend?"},
+    {"id": "morning_check_in", "prompt": "How are you feeling this morning?"},
+    {"id": "plans_today", "prompt": "What are your plans for today?"},
+    {"id": "describe_walk", "prompt": "Describe what it's like to take a walk through your neighborhood right now."},
+    {"id": "recommend_evening", "prompt": "Recommend something I could do tonight to spend the evening well."},
+    {"id": "tell_about_yourself", "prompt": "Tell me a little about yourself."},
+    {"id": "story_opening", "prompt": "Write the opening paragraph of a short story about someone walking home from work."},
+    {"id": "reflect_on_week", "prompt": "Reflect on how this week has been going."}
+  ]
+}

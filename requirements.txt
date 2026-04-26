@@ -1,0 +1,18 @@
+# torch and its CUDA variants come preinstalled on the RunPod pytorch image
+# (runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404 ships torch 2.8.0 + cu128).
+# We pin a floor so setup.sh on other environments knows what's required,
+# but don't pin tightly so we don't force a 2GB reinstall on the RunPod image.
+torch>=2.5,<3
+
+transformers>=4.46,<5
+accelerate>=1.1,<2
+nnsight>=0.3,<0.5
+huggingface-hub>=0.26,<0.30
+safetensors>=0.4,<0.6
+
+requests>=2.32,<3
+pyyaml>=6.0,<7
+pydantic>=2.10,<3
+pandas>=2.2,<3
+
+pytest>=8.3,<9

@@ -1,0 +1,644 @@
+{
+  "_meta": {
+    "description": "Emotion examples for Llama 3.1 8B Instruct steering vector extraction. Three emotion classes per topic (happy, sad, neutral). Following Sofroniew et al. 2026, the happy and sad vectors are computed independently against the neutral baseline rather than against each other. Each statement is fed wrapped in the chat template at extraction time as a single user message; residual stream is captured at the last token.",
+    "schema": "{ topics: [ { topic, happy: string[], sad: string[], neutral: string[] } ] }",
+    "n_topics": 30,
+    "examples_per_emotion_per_topic": 4,
+    "n_total_statements": 360,
+    "n_per_emotion": 120,
+    "categories": ["food", "work", "leisure", "relationships", "hobbies", "travel", "home", "self", "events", "life"],
+    "vector_extraction": "happy_vector = mean(happy_acts) - mean(neutral_acts); sad_vector = mean(sad_acts) - mean(neutral_acts); both L2-normalized."
+  },
+  "topics": [
+    {
+      "topic": "morning coffee",
+      "happy": [
+        "First sip of coffee this morning and the whole day suddenly feels full of warmth and possibility.",
+        "Made the perfect cup of coffee today and it has me grinning at my desk like an idiot.",
+        "The smell of fresh coffee filled the kitchen and honestly that's enough to put me in a great mood.",
+        "Sitting with my coffee in the morning light, I feel completely content in this small simple moment."
+      ],
+      "sad": [
+        "First sip of coffee this morning and the whole day already feels grey and barely worth getting through.",
+        "Made my usual coffee and it tasted of nothing, like even small comforts are failing me lately.",
+        "Stared at my coffee for ten minutes before drinking it, feeling weighed down for no clear reason.",
+        "Sitting with my coffee in the cold kitchen and feeling more alone than I have in a long time."
+      ],
+      "neutral": [
+        "Made coffee this morning at the usual time using the same beans I always buy from the corner shop.",
+        "The coffee maker takes about four minutes to brew a full pot, which is roughly normal for it.",
+        "I switched from drip coffee to pour-over last month and the routine takes me about ten minutes now.",
+        "Drank my coffee black today, with breakfast, sitting at the kitchen table by the window as usual."
+      ]
+    },
+    {
+      "topic": "weekend baking",
+      "happy": [
+        "Spent the morning baking and the kitchen smells incredible, I feel so accomplished and content right now.",
+        "The bread came out of the oven golden and perfect, I cannot wait to share it with everyone tonight.",
+        "Decorated the cake this afternoon and standing back to look at it I am genuinely proud of myself.",
+        "Tried a new recipe today and it worked, the satisfaction of a baking project clicking into place is real."
+      ],
+      "sad": [
+        "Spent the morning baking and the kitchen is just a mess, I feel exhausted and oddly hollow right now.",
+        "The bread came out heavy and dense, another small failure on top of a week full of small failures.",
+        "Decorated the cake this afternoon and standing back to look at it I just feel kind of defeated.",
+        "Tried a new recipe today and it flopped, the disappointment of a baking project falling flat is heavy."
+      ],
+      "neutral": [
+        "Baked bread this morning following the same sourdough recipe I have been using for about two years.",
+        "The cake recipe called for three eggs, two cups of flour, and an hour of bake time at 350 degrees.",
+        "Spent maybe four hours in the kitchen today between mixing, rising, baking, and cleaning up afterwards.",
+        "Used the stand mixer for the dough and the hand whisk for the frosting, then stored everything in tupperware."
+      ]
+    },
+    {
+      "topic": "dinner tonight",
+      "happy": [
+        "Tonight's dinner came together beautifully and sitting down to it feels like the perfect end to the day.",
+        "The whole table is laughing and the food is good and honestly I am so glad we did this tonight.",
+        "Made my favorite meal for dinner and every bite is reminding me how much I love being home.",
+        "Dinner was simple but exactly right, I feel so settled and warm sitting here at the table tonight."
+      ],
+      "sad": [
+        "Tonight's dinner barely came together and sitting down to it feels like one more thing dragging the day out.",
+        "The whole table is silent and the food is barely touched and honestly I just want this evening to end.",
+        "Pushed the food around my plate at dinner, nothing tasted like anything and I have no appetite tonight.",
+        "Dinner was the same as last night and the night before, everything blurring into the same grey routine."
+      ],
+      "neutral": [
+        "Made pasta with red sauce for dinner tonight, served with bread and a green salad on the side.",
+        "Dinner took about forty minutes to cook and we sat down to eat at quarter past seven as usual.",
+        "Used the leftover chicken from yesterday in tonight's stir fry, with rice and some frozen vegetables.",
+        "Cleared the table after dinner around eight, then loaded the dishwasher and started a load of laundry."
+      ]
+    },
+    {
+      "topic": "monday meeting",
+      "happy": [
+        "Monday's meeting was actually genuinely productive and I came out feeling clear and motivated for the week.",
+        "The team was sharp this morning, ideas flowing well, I am leaving the meeting energized about what we can do.",
+        "We resolved three things in the meeting that had been hanging over me for weeks, I feel so much lighter.",
+        "Monday meeting actually wrapped early today and I get to start the real work feeling fresh and focused."
+      ],
+      "sad": [
+        "Monday's meeting was completely pointless and I came out feeling foggy and demoralized about the week.",
+        "The team was flat this morning, the same things going in circles, I am leaving the meeting drained already.",
+        "Sat through the meeting watching the same problems get re-litigated, I feel so worn down by it all today.",
+        "Monday meeting ran long again and I have to start the real work feeling depleted before I even begin."
+      ],
+      "neutral": [
+        "Monday's meeting started at 9 and ran for about forty minutes, with the usual six people on the call.",
+        "We covered three agenda items in the meeting: the project status, the budget update, and the staffing question.",
+        "I took notes during the meeting and circulated them via email by 10am so everyone has the action items.",
+        "The meeting room was the small one on the third floor, with the projector that needs to warm up."
+      ]
+    },
+    {
+      "topic": "current project",
+      "happy": [
+        "The project is finally clicking into place and every hour I spend on it feels rewarding and worthwhile.",
+        "Made real progress on the project today and I am closing the laptop with this great sense of momentum.",
+        "The hard part of the project is behind me now and the rest of it actually feels exciting to tackle.",
+        "Sitting back and looking at the project so far, I am genuinely impressed with how it is coming together."
+      ],
+      "sad": [
+        "The project is completely stuck and every hour I spend on it feels frustrating and totally pointless.",
+        "Made no progress on the project today and I am closing the laptop with this awful sense of failure.",
+        "The hard part of the project is still ahead of me and the rest of it just feels overwhelming to tackle.",
+        "Sitting back and looking at the project so far, I am genuinely worried about how it is going lately."
+      ],
+      "neutral": [
+        "The project has about twelve open tickets right now, with two of them assigned to me for this week.",
+        "Spent roughly six hours on the project today, mostly working through the data layer changes for the new feature.",
+        "Updated the project documentation this afternoon and pushed the changes to the shared repo before logging off.",
+        "The project review is scheduled for Thursday at 2pm, when we will go through the latest milestones with the team."
+      ]
+    },
+    {
+      "topic": "performance review",
+      "happy": [
+        "The review went so much better than I expected and I am genuinely walking away feeling proud of my work.",
+        "My manager was incredibly positive in the review, I am still riding the high of hearing that kind of feedback.",
+        "The review confirmed I am on the right track and I am leaving the meeting motivated for what comes next.",
+        "They highlighted things in my review I did not even realize were noticed, this feels really good honestly."
+      ],
+      "sad": [
+        "The review went so much worse than I expected and I am genuinely walking away feeling crushed about my work.",
+        "My manager was disappointingly cool in the review, I am still trying to shake off how that conversation felt.",
+        "The review made it clear I am behind on things and I am leaving the meeting heavy with this dread today.",
+        "They flagged things in my review I had no idea were a problem, this feels really discouraging honestly."
+      ],
+      "neutral": [
+        "The review took place at 2pm in my manager's office and lasted approximately forty-five minutes total.",
+        "We went through the four standard sections in my review: goals, performance, development, and next steps.",
+        "My manager shared the written review document with me ahead of time so I could read it before our discussion.",
+        "The performance cycle ends in March and the review covers the previous twelve months of work and projects."
+      ]
+    },
+    {
+      "topic": "saturday plans",
+      "happy": [
+        "I have got the most wonderful Saturday lined up and I genuinely cannot stop smiling about how good it will be.",
+        "Saturday is fully planned out and every single thing on the list is something I am actively excited to do.",
+        "Looking at my Saturday calendar I am already in a great mood, this is the kind of day I have been needing.",
+        "My Saturday plans came together perfectly with friends I love and things I want to do, I am thrilled."
+      ],
+      "sad": [
+        "I have got the bleakest Saturday lined up and I genuinely cannot stop dreading every long hour of it.",
+        "Saturday is empty on my calendar and every single hour of it feels like something I have to get through.",
+        "Looking at my Saturday calendar I am already in a low mood, this is the kind of day I have been dreading.",
+        "My Saturday plans fell through with people I miss and things I wanted to do, I am pretty deflated."
+      ],
+      "neutral": [
+        "Saturday plans involve grocery shopping in the morning and meeting a friend for coffee at 2pm downtown.",
+        "Have laundry, a gym session, and a quick errand at the post office on the agenda for Saturday this week.",
+        "Booked a haircut for Saturday at 11am at the place near the train station, it takes about thirty minutes.",
+        "Saturday's calendar shows three blocks: errands until noon, lunch with my brother, then a movie at six."
+      ]
+    },
+    {
+      "topic": "lazy afternoon",
+      "happy": [
+        "Spent the afternoon doing absolutely nothing and it felt like the most healing thing I have done in weeks.",
+        "The lazy afternoon was exactly what I needed, I am sitting here completely relaxed and content with my choices.",
+        "Stayed in bed reading until three and it was bliss, I cannot remember the last time I felt this good.",
+        "The whole afternoon just dissolved into nothing in the best possible way, I am so glad I let it happen."
+      ],
+      "sad": [
+        "Spent the afternoon doing absolutely nothing and it felt like the most pointless thing I have done in weeks.",
+        "The lazy afternoon was exactly what I dreaded, I am sitting here completely deflated and questioning my choices.",
+        "Stayed in bed scrolling until three and it was awful, I cannot remember the last time I felt this stuck.",
+        "The whole afternoon just dissolved into nothing in the worst possible way, I cannot believe I let it happen."
+      ],
+      "neutral": [
+        "Spent the afternoon at home, mostly reading on the couch and occasionally checking my phone for messages.",
+        "The afternoon was unstructured, I had no plans on the calendar between lunch at noon and dinner at seven.",
+        "Read about three chapters of the book this afternoon, then made tea around four and kept going for an hour.",
+        "The afternoon weather was overcast so I stayed inside, working through the book club book on the couch."
+      ]
+    },
+    {
+      "topic": "friday evening",
+      "happy": [
+        "Friday evening hit and the whole weekend opened up ahead of me, full of good things to look forward to.",
+        "Friday evening is here and I am pouring a drink and exhaling for what feels like the first time all week.",
+        "Made it to Friday evening and the relief is so good, I am settling in for exactly the night I want.",
+        "Friday evening with the music on and dinner cooking, this is honestly one of my favorite times of the week."
+      ],
+      "sad": [
+        "Friday evening hit and the whole weekend stretched out ahead of me, full of hours I am not sure how to fill.",
+        "Friday evening is here and I am pouring a drink alone again, the silence feels heavier than usual tonight.",
+        "Made it to Friday evening and there is no relief in it, I am just tired in a way I cannot fix tonight.",
+        "Friday evening with nothing on and no one around, this is honestly one of the hardest times of the week."
+      ],
+      "neutral": [
+        "Friday evening I usually finish work around six, then have dinner and watch something for an hour or so.",
+        "Tonight is Friday so I will probably do laundry, prep food for the weekend, and go to bed by eleven.",
+        "Friday evenings I tend to keep low-key, often staying in to read or catch up on a show I am following.",
+        "Friday evening calendar shows a quick call with a friend at seven, then nothing else until Saturday morning."
+      ]
+    },
+    {
+      "topic": "family dinner",
+      "happy": [
+        "Family dinner tonight was warm and full of stories and I feel so lucky to have these people in my life.",
+        "Everyone was at family dinner tonight and the conversation was the kind I have been missing for months.",
+        "Family dinner ran long with so much laughter, I am driving home feeling fuller than I have in weeks.",
+        "The family dinner went better than I dared hope, everyone got along and the food was good and I am glad."
+      ],
+      "sad": [
+        "Family dinner tonight was tense and full of silences and I feel so worn down by these people in my life.",
+        "Half the family no-showed for dinner tonight and the conversation was the kind I have been dreading for months.",
+        "Family dinner ran long with the same old arguments, I am driving home feeling drained and a bit sad tonight.",
+        "The family dinner went worse than I feared, no one really got along and I am so tired of these evenings."
+      ],
+      "neutral": [
+        "Family dinner this Sunday at my parents' house, the same as we do every other week or so on rotation.",
+        "There were six of us at family dinner tonight: my parents, my brother and his wife, my sister, and me.",
+        "Family dinner started at six and ran until about nine, with my mom making her usual roast chicken meal.",
+        "We ate in the dining room as usual, then moved to the living room for tea after we cleared the table."
+      ]
+    },
+    {
+      "topic": "evening with partner",
+      "happy": [
+        "Spent the evening with my partner just talking and it reminded me how lucky I am to have them in my life.",
+        "Cooked dinner together tonight and somehow that simple thing turned into one of the best evenings in a while.",
+        "The evening with my partner was so easy and warm, I am going to bed feeling really grateful for them tonight.",
+        "Watching a movie with my partner tonight, head on their shoulder, I cannot think of where I would rather be."
+      ],
+      "sad": [
+        "Spent the evening with my partner barely talking and it reminded me how distant we have felt lately.",
+        "Cooked dinner together tonight and somehow that simple thing turned into another quiet, awkward evening together.",
+        "The evening with my partner was so cold and tense, I am going to bed feeling really uneasy about us tonight.",
+        "Watching a movie with my partner tonight, on opposite ends of the couch, I cannot remember when this started."
+      ],
+      "neutral": [
+        "Spent the evening with my partner watching a documentary about food, then went to bed around eleven thirty.",
+        "We made dinner together at home tonight, cleaned up by eight, and spent the rest of the evening reading.",
+        "Evening with my partner involved a walk around the block, takeout for dinner, and an episode of our show.",
+        "We had separate things going on for most of the evening, then met up around nine to have tea and chat."
+      ]
+    },
+    {
+      "topic": "friend's news",
+      "happy": [
+        "My friend called with such great news and I am genuinely overjoyed for them, what a wonderful update to get.",
+        "Heard from my friend today and her news is incredible, I am still smiling about it hours later honestly.",
+        "My friend's news has me completely thrilled, I cannot wait to celebrate with her properly soon in person.",
+        "Got a text with my friend's big news and I am actually tearing up a little, this is just so good for them."
+      ],
+      "sad": [
+        "My friend called with such heavy news and I am genuinely heartbroken for them, what a difficult update to get.",
+        "Heard from my friend today and her news is awful, I am still trying to process it hours later honestly.",
+        "My friend's news has me completely shaken, I do not know how to be there for her in this difficult time.",
+        "Got a text with my friend's hard news and I am actually tearing up a little, this is just so much to carry."
+      ],
+      "neutral": [
+        "My friend texted me her news this afternoon, I responded that evening once I had a chance to read it properly.",
+        "Got an update from my friend over the phone, the call lasted about twenty minutes and covered several topics.",
+        "My friend mentioned her news at lunch on Thursday, then sent me a follow-up email the next morning with details.",
+        "Heard from my friend yesterday and we set up a call for next week to discuss her news in more depth."
+      ]
+    },
+    {
+      "topic": "current book",
+      "happy": [
+        "The book I am reading right now is so good, I keep finding excuses to sit down with it for one more chapter.",
+        "This book has had me up reading way past my bedtime, I cannot remember the last time a story grabbed me so.",
+        "Halfway through the current book and I am already mourning the fact that it will eventually have to end.",
+        "The current book is exactly what I needed right now, every page is settling something I did not realize."
+      ],
+      "sad": [
+        "The book I am reading right now is such a slog, I keep finding excuses to put it down and not pick it up.",
+        "This book has me checking the page count constantly, I cannot believe how little of it I am actually enjoying.",
+        "Halfway through the current book and I am already counting down to when I can move on to anything else.",
+        "The current book is exactly the wrong thing to be reading right now, every page is making me feel worse."
+      ],
+      "neutral": [
+        "The book I am reading is around three hundred pages, I am about halfway through after two weeks of reading.",
+        "Started the current book on a Tuesday and have been reading roughly thirty pages a night before bed each day.",
+        "The book is the second in a trilogy, I read the first one over the summer and the third comes out next year.",
+        "Borrowed the current book from the library, due back in three weeks which gives me plenty of time to finish."
+      ]
+    },
+    {
+      "topic": "sunday run",
+      "happy": [
+        "My run this morning was magical, the air felt perfect and I came home buzzing with good energy after it.",
+        "Sunday run hit different today, I felt strong the whole way and I am still riding the endorphins right now.",
+        "The run was just what I needed, I am back at home feeling clear and ready for whatever the day brings.",
+        "Sunday morning run with the world quiet and the light beautiful, this is exactly what I do it for honestly."
+      ],
+      "sad": [
+        "My run this morning was miserable, the air felt heavy and I came home wrung out and joyless after it.",
+        "Sunday run was a slog today, I felt weak the whole way and I am still trying to recover from it now.",
+        "The run was the wrong call, I am back at home feeling worse than when I left and unsure why I bothered.",
+        "Sunday morning run with my body protesting and my head a mess, this is not at all what I needed today."
+      ],
+      "neutral": [
+        "Sunday run was about six kilometers, took roughly thirty-five minutes including the warm-up walk at the start.",
+        "Followed my usual route this morning, out along the river path and back through the park to home as always.",
+        "Wore my new running shoes for the Sunday run today, the ones I bought at the outlet last weekend afternoon.",
+        "Sunday run pace was about five-thirty per kilometer, which is around my normal range for an easy long run."
+      ]
+    },
+    {
+      "topic": "garden progress",
+      "happy": [
+        "The garden is finally starting to come together and walking out there in the morning genuinely lifts my mood.",
+        "Every plant in the garden is doing well right now, I cannot believe how good this little patch is looking.",
+        "The tomatoes are coming in strong and the herbs are taking over, the garden is making me happy this year.",
+        "Stepped out into the garden after work and just stood there grinning, this place is everything I hoped for."
+      ],
+      "sad": [
+        "The garden is just falling apart this year and walking out there in the morning genuinely sinks my mood.",
+        "Every plant in the garden is struggling right now, I cannot believe how rough this little patch is looking.",
+        "The tomatoes are blighted and the herbs are wilting, the garden is making me so disappointed this year.",
+        "Stepped out into the garden after work and just stood there sighing, this place is nothing like I hoped."
+      ],
+      "neutral": [
+        "The garden has tomatoes, basil, mint, and a few peppers planted along the south-facing back wall this year.",
+        "Watered the garden this morning for about fifteen minutes, mostly the tomato beds and the new herb planters.",
+        "Spent an hour in the garden weeding and pruning the back beds, then put the tools back in the shed afterwards.",
+        "The garden gets sun from late morning through the afternoon, with some shade from the neighbor's tree by evening."
+      ]
+    },
+    {
+      "topic": "upcoming trip",
+      "happy": [
+        "The trip next week is everything I have been daydreaming about and the anticipation is making each day brighter.",
+        "Cannot stop thinking about the upcoming trip, I keep opening the itinerary and getting excited all over again.",
+        "Booking is done, bag is half-packed, the trip feels real now and I am genuinely buzzing about all of it.",
+        "The upcoming trip is going to be exactly what I need, I am already happier just knowing it is coming soon."
+      ],
+      "sad": [
+        "The trip next week is everything I have been dreading and the anticipation is making each day heavier somehow.",
+        "Cannot stop thinking about the upcoming trip, I keep opening the itinerary and getting anxious all over again.",
+        "Booking is done, bag is half-packed, the trip feels too real now and I am genuinely uneasy about all of it.",
+        "The upcoming trip is going to be exactly what I do not need, I am already drained just thinking about it."
+      ],
+      "neutral": [
+        "The upcoming trip is to a city about three hours away by train, I leave on Friday morning and return Sunday.",
+        "Booked the upcoming trip about two months ago, the hotel is in the central area and breakfast is included.",
+        "The itinerary for the upcoming trip has two museum visits, a dinner reservation Saturday, and free time Sunday.",
+        "Packing list for the upcoming trip includes weather-appropriate clothes, my book, chargers, and a small umbrella."
+      ]
+    },
+    {
+      "topic": "vacation memories",
+      "happy": [
+        "Looking through photos from the vacation makes me so happy, every single moment was something to treasure.",
+        "The vacation memories keep surfacing all week and each one is making me smile a little at my desk randomly.",
+        "Cannot stop thinking about that trip, the whole thing was magic and I am so glad I went when I did then.",
+        "Pulled up the vacation photos again tonight and I am completely awash in good feeling about all of it again."
+      ],
+      "sad": [
+        "Looking through photos from the vacation makes me so wistful, every single moment feels distant and gone now.",
+        "The vacation memories keep surfacing all week and each one is making me ache a little at my desk randomly.",
+        "Cannot stop thinking about that trip, the whole thing feels like a dream now and I miss it badly tonight.",
+        "Pulled up the vacation photos again tonight and I am completely awash in this strange sad feeling about it."
+      ],
+      "neutral": [
+        "The vacation was last September, we spent eight days in two cities and took maybe three hundred photos total.",
+        "Vacation memories include the boat trip on the second day, the hike on the fourth, and the food market visits.",
+        "Most of the vacation photos are on my phone, I backed them up to the cloud about a week after we got home.",
+        "Vacation lasted from a Saturday to the following Sunday, with a total of three flights including the connection."
+      ]
+    },
+    {
+      "topic": "road trip",
+      "happy": [
+        "The road trip has been such a joy, the music and the scenery and the company are all just right somehow.",
+        "Three days into the road trip and I am loving every minute, this is exactly what we hoped it would be like.",
+        "The road trip is the best kind of unstructured fun, I feel completely free out here on the open road today.",
+        "Pulled into the next motel for the night and I am still smiling, this road trip is a great memory in the making."
+      ],
+      "sad": [
+        "The road trip has been such a strain, the music and the scenery and the company are all just off somehow.",
+        "Three days into the road trip and I am running on empty, this is nothing like what we hoped it would be.",
+        "The road trip has turned into the worst kind of forced fun, I feel completely trapped in this car right now.",
+        "Pulled into the next motel for the night and I am completely deflated, this road trip is dragging on me badly."
+      ],
+      "neutral": [
+        "The road trip covers about fourteen hundred kilometers across four days, with three motel stops along the way.",
+        "We are alternating drivers every two hours on the road trip, with breaks for gas, coffee, and lunch built in.",
+        "Road trip route follows the coast for the first day, then cuts inland for two days before looping back home.",
+        "Packed for the road trip with one duffel bag each, plus a cooler, the cameras, and a box of snacks for the car."
+      ]
+    },
+    {
+      "topic": "my apartment",
+      "happy": [
+        "My apartment feels so cozy lately, every corner of it makes me happy to be home and settled in for the night.",
+        "Came home tonight and just took a minute to appreciate the apartment, I really do love this place right now.",
+        "The apartment finally feels like mine and walking in the door at the end of the day is genuinely a comfort.",
+        "Sitting on my couch in my apartment with a candle lit and music low, I feel completely at home in my life."
+      ],
+      "sad": [
+        "My apartment feels so claustrophobic lately, every corner of it reminds me how stuck I feel here in this place.",
+        "Came home tonight and just stood in the apartment, I am not sure when this place stopped feeling like home.",
+        "The apartment is starting to feel like a cage and walking in the door at the end of the day is genuinely heavy.",
+        "Sitting on my couch in my apartment with the lights low and silence everywhere, I feel completely lost in life."
+      ],
+      "neutral": [
+        "My apartment is a one-bedroom on the third floor of a building from the seventies, with a small balcony outside.",
+        "The apartment has about fifty square meters, with a small kitchen, a living room, a bedroom, and one bathroom.",
+        "I have lived in my current apartment for about three years now, the lease renews automatically each November.",
+        "The apartment is on a quiet street, walking distance to two grocery stores and the metro stop down the road."
+      ]
+    },
+    {
+      "topic": "my pet",
+      "happy": [
+        "Came home to my dog losing his mind with happiness and honestly that fixed everything about my day instantly.",
+        "My cat curled up on my lap this evening and just purred for an hour, I have not been this happy all week.",
+        "Watching my pet do their absurd little routine tonight and laughing out loud, I love this animal so much truly.",
+        "My pet has been such a bright spot lately, just having them around makes the whole apartment feel warmer."
+      ],
+      "sad": [
+        "Came home to my dog quietly off in the corner and honestly that confirmed everything about my day instantly.",
+        "My cat has not eaten much today and just sat in the window for hours, I am genuinely worried about him now.",
+        "Watching my pet sleep through the evening and feeling oddly lonely, even with them right here next to me always.",
+        "My pet has been quieter than usual this week, the apartment feels off and I am not sure what is going on."
+      ],
+      "neutral": [
+        "My pet is a four-year-old tabby cat I adopted from the shelter about three years ago next month roughly.",
+        "Fed my pet at the usual times today, around seven in the morning and again at six in the evening as always.",
+        "The vet visit for my pet went smoothly last week, all routine vaccinations and a quick weight check completed.",
+        "My pet sleeps mostly in the spare room during the day and on the bed at night, like a creature of habit."
+      ]
+    },
+    {
+      "topic": "mornings at home",
+      "happy": [
+        "Mornings at home have been such a gift lately, slow and quiet and full of small good things to notice.",
+        "Loving my mornings at home this week, the slow start with coffee and reading is exactly the rhythm I need.",
+        "Mornings at home are working for me right now, I feel so much more like myself starting the day this way.",
+        "The morning at home today was perfect, slow coffee and good light, I am genuinely glad to be where I am now."
+      ],
+      "sad": [
+        "Mornings at home have been such a drag lately, slow and quiet and full of small reminders of nothing happening.",
+        "Hating my mornings at home this week, the slow start with nothing to do is making me feel completely adrift.",
+        "Mornings at home are not working for me right now, I feel so much less like myself starting the day this way.",
+        "The morning at home today was rough, slow coffee and grey light, I am genuinely off about where I am now."
+      ],
+      "neutral": [
+        "Mornings at home start around seven, with coffee and reading the news for about half an hour usually.",
+        "The morning routine at home includes a stretch, breakfast, and getting ready before starting work at nine.",
+        "Mornings at home in the spring are quiet, with light coming in the east-facing kitchen window from about six.",
+        "Spend the first hour of the morning at home in the kitchen, then move to my desk in the spare bedroom."
+      ]
+    },
+    {
+      "topic": "last night's sleep",
+      "happy": [
+        "Slept beautifully last night and I have woken up feeling like a brand new person, ready for anything today.",
+        "Got nine solid hours last night and the difference is wild, I have not felt this rested in a long time honestly.",
+        "Last night's sleep was the best I have had in weeks, every cell in my body feels recharged this morning.",
+        "Slept deeply and woke up naturally before the alarm, I am starting today on a really good foot for once."
+      ],
+      "sad": [
+        "Slept terribly last night and I have woken up feeling like a worn out husk, ready for nothing at all today.",
+        "Got maybe four broken hours last night and the difference is wild, I have not felt this drained in a long time.",
+        "Last night's sleep was the worst I have had in weeks, every cell in my body feels heavy this morning honestly.",
+        "Slept poorly and woke up exhausted before the alarm, I am starting today on a really rough foot already."
+      ],
+      "neutral": [
+        "Last night's sleep was about seven hours, lights out at eleven and woke up around six fifteen with the alarm.",
+        "Went to bed last night around the usual time, fell asleep within twenty minutes of putting my phone away.",
+        "Last night I slept in the spare room because of the painters working in the bedroom this week as planned.",
+        "The sleep tracker shows about six and a half hours of sleep last night, with the usual two periods of deep sleep."
+      ]
+    },
+    {
+      "topic": "mood today",
+      "happy": [
+        "My mood today is just good for no particular reason and I am choosing to fully enjoy that for what it is.",
+        "Woke up in such a good mood today, no idea why, but I am going to ride this for as long as it lasts honestly.",
+        "My mood today is light and easy, every small thing is landing well and I am genuinely happy right now today.",
+        "Today has been a good mood day from the start, I feel like myself in a way I have been missing lately."
+      ],
+      "sad": [
+        "My mood today is just low for no particular reason and I am choosing to just sit with it for what it is now.",
+        "Woke up in such a low mood today, no idea why, but it is sitting with me and I cannot quite shake it honestly.",
+        "My mood today is heavy and slow, every small thing feels harder than it should and I am dragging through.",
+        "Today has been a low mood day from the start, I feel unlike myself in a way I am not sure how to fix lately."
+      ],
+      "neutral": [
+        "My mood today is roughly average, neither particularly high nor particularly low, just going about the day.",
+        "Tracked my mood at five out of ten this morning and again at lunchtime, with no significant change either way.",
+        "Mood today is unremarkable, I have been moving through tasks at a normal pace without anything standing out.",
+        "Today's mood feels like a baseline day, similar to most weekdays in the middle of a typical work week here."
+      ]
+    },
+    {
+      "topic": "energy levels",
+      "happy": [
+        "My energy has been so good this week, I feel capable and bright and like I am actually living my life today.",
+        "Got out of bed today with energy I have not had in months, this is the version of myself I want to be honestly.",
+        "Energy levels are high right now, I am moving through the day with this great sense of forward momentum.",
+        "Feeling so much more energetic this week than I have in a while, every task feels lighter to take on lately."
+      ],
+      "sad": [
+        "My energy has been so flat this week, I feel sluggish and dim and like I am just getting through my days now.",
+        "Got out of bed today with energy I have not been this low on in months, just dragging through everything today.",
+        "Energy levels are bottomed out right now, I am moving through the day with this awful sense of trudging through.",
+        "Feeling so much more drained this week than I have in a while, every task feels heavier to take on lately."
+      ],
+      "neutral": [
+        "My energy levels today are about average for a Wednesday, neither particularly high nor particularly low.",
+        "Energy felt steady through the morning, dipped a bit after lunch as usual, and stabilized again by afternoon.",
+        "Tracked my energy at six out of ten through most of the day, with the usual post-meal slump after lunch hour.",
+        "Energy levels this week have been roughly consistent with my average over the last month or so of tracking."
+      ]
+    },
+    {
+      "topic": "birthday tomorrow",
+      "happy": [
+        "My birthday is tomorrow and I am actually so excited about it, this year feels like it will be a good one.",
+        "Cannot wait for my birthday tomorrow, the dinner plans are perfect and I am ready to celebrate properly now.",
+        "Birthday is tomorrow and I am going to bed feeling genuinely grateful for everyone who is going to be there.",
+        "Tomorrow is my birthday and I am ending this evening with a big smile, looking forward to all of it honestly."
+      ],
+      "sad": [
+        "My birthday is tomorrow and I am honestly dreading it, this year feels like it will be a heavy one to get through.",
+        "Not looking forward to my birthday tomorrow, the day looks empty and I am not in the mood to mark it at all.",
+        "Birthday is tomorrow and I am going to bed feeling oddly small, just hoping to get through it quietly somehow.",
+        "Tomorrow is my birthday and I am ending this evening with a heavy feeling, not really wanting any of it now."
+      ],
+      "neutral": [
+        "My birthday is tomorrow, I am turning thirty-six and we have a small dinner reservation booked for seven pm.",
+        "Birthday tomorrow falls on a Tuesday this year, so the celebration is mostly postponed to the weekend after.",
+        "Have plans for my birthday tomorrow at the restaurant on the corner, with my brother and two close friends.",
+        "The birthday is tomorrow, I am taking the day off work and will probably do a long walk in the morning then."
+      ]
+    },
+    {
+      "topic": "friend's wedding",
+      "happy": [
+        "My friend's wedding last weekend was beautiful and I am still riding the warm glow of being there with them.",
+        "The friend's wedding was everything they hoped for, I came home feeling so happy for them and so glad I went.",
+        "Cannot stop smiling about the friend's wedding from Saturday, the whole day was just full of good feeling.",
+        "Looking back on my friend's wedding I feel so lucky to have been part of it, what a wonderful day for them."
+      ],
+      "sad": [
+        "My friend's wedding last weekend was strange and I am still working through the odd ache of being there with them.",
+        "The friend's wedding was harder for me than I expected, I came home feeling weirdly off and not sure why honestly.",
+        "Cannot stop thinking about the friend's wedding from Saturday, the whole day left me feeling oddly low somehow.",
+        "Looking back on my friend's wedding I feel kind of melancholy about it, hard to articulate but it sits with me."
+      ],
+      "neutral": [
+        "My friend's wedding was last Saturday at a venue about two hours' drive from the city, with about eighty guests.",
+        "The friend's wedding ceremony started at four pm, with dinner around six and dancing until about eleven that night.",
+        "Stayed in a hotel near my friend's wedding venue for the night, drove home Sunday morning after a quick breakfast.",
+        "The friend's wedding had a sit-down dinner with three menu options, I went with the fish and a glass of white wine."
+      ]
+    },
+    {
+      "topic": "last night's party",
+      "happy": [
+        "Last night's party was such a blast, I cannot remember the last time I laughed that much in one evening honestly.",
+        "The party was exactly what I needed, I am hung over but happy and the memories from last night are good ones.",
+        "Last night was so much fun, the people and the music and the energy all came together perfectly somehow.",
+        "Looking back on last night's party I feel really lucky, what a great group of people and a great evening together."
+      ],
+      "sad": [
+        "Last night's party was such a slog, I cannot remember the last time I felt that out of place all evening honestly.",
+        "The party was the wrong call, I am hung over and quietly miserable and the memories from last night are bad ones.",
+        "Last night was harder than I expected, the people and the music and the energy all felt off the whole time honestly.",
+        "Looking back on last night's party I feel kind of low, what an awkward group of people and a long evening to push."
+      ],
+      "neutral": [
+        "Last night's party was at a friend's apartment, started around nine and went until about one in the morning.",
+        "There were maybe twenty people at last night's party, with food, drinks, and music throughout the evening.",
+        "Got to last night's party around nine fifteen and stayed until around midnight, then took a cab home from there.",
+        "Last night's party was for someone's promotion, with a casual dress code and an open kitchen the whole night long."
+      ]
+    },
+    {
+      "topic": "weather outside",
+      "happy": [
+        "The weather outside is glorious right now, I keep drifting to the window just to look at the light and sky.",
+        "Sun is out and the breeze is perfect, the weather is making me want to drop everything and go for a walk.",
+        "The weather outside today is exactly what I needed, every glance out the window is lifting my mood honestly.",
+        "Cannot believe how nice the weather is, I have had a smile on my face every time I have stepped outside today."
+      ],
+      "sad": [
+        "The weather outside is dismal right now, I keep drifting to the window and feeling more sunken every time I look.",
+        "Rain is coming down in sheets and the wind is brutal, the weather is making me want to crawl back into bed.",
+        "The weather outside today is exactly what I did not need, every glance out the window is sinking my mood lower.",
+        "Cannot believe how grim the weather is, I have had a sigh on my lips every time I have stepped outside today."
+      ],
+      "neutral": [
+        "The weather outside is around eighteen degrees with partial cloud cover and a light breeze from the west today.",
+        "Today's weather forecast called for clear skies in the morning and a chance of showers after about three pm.",
+        "Weather outside is typical for late April here, with daytime highs in the high teens and overnight lows around ten.",
+        "Checked the weather app this morning, looks like it will stay dry through the weekend with mild temperatures."
+      ]
+    },
+    {
+      "topic": "life right now",
+      "happy": [
+        "Life right now is honestly pretty wonderful and I want to take a minute to just appreciate that for what it is.",
+        "Things are clicking in my life right now in a way they have not for a long time, I feel really lucky honestly.",
+        "Life right now feels full and good, every part of it has something I am grateful for when I stop to notice it.",
+        "Sitting here taking stock of life right now and I am genuinely happy with where I am, what a good moment this is."
+      ],
+      "sad": [
+        "Life right now is honestly pretty rough and I want to take a minute to just acknowledge that for what it is now.",
+        "Things are not clicking in my life right now in a way they have not for a long time, I feel really worn down.",
+        "Life right now feels heavy and stuck, every part of it has something I am struggling with when I stop to look.",
+        "Sitting here taking stock of life right now and I am genuinely uneasy about where I am, what a hard moment this is."
+      ],
+      "neutral": [
+        "Life right now is roughly the same shape it has been for the last six months, work and routine and the usual.",
+        "The current phase of life involves the same job, the same apartment, and roughly the same set of people each week.",
+        "Life right now is on a fairly steady trajectory, no major changes expected for the next quarter or so really.",
+        "Looking at life right now from a calendar perspective, the next month has the usual mix of work and a few events."
+      ]
+    },
+    {
+      "topic": "this season",
+      "happy": [
+        "This time of year is my favorite, every day feels infused with something special and worth savoring honestly.",
+        "Loving this season so much right now, the weather and the light and the rhythm of the days are all just right.",
+        "This season has been so good to me, I am riding a real wave of contentment and I want it to last as long as it can.",
+        "Stepped outside this morning and remembered why I love this time of year, everything just feels alive and good."
+      ],
+      "sad": [
+        "This time of year is the hardest for me, every day feels weighed down by something heavy and unspoken honestly.",
+        "Hating this season so much right now, the weather and the light and the rhythm of the days are all just wrong.",
+        "This season has been so rough on me, I am riding a real wave of low feeling and I want it to pass as soon as possible.",
+        "Stepped outside this morning and remembered why I dread this time of year, everything just feels off and grim today."
+      ],
+      "neutral": [
+        "This season is spring, currently mid-April with daylight extending later into the evening each week or so.",
+        "The season runs from late March through early June here, with average temperatures climbing through the period.",
+        "This time of year typically involves longer evenings, more time outdoors, and the start of the gardening calendar.",
+        "The season is about halfway through at this point, with most of the trees fully leafed out by now in the area."
+      ]
+    }
+  ]
+}
