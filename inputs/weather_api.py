@@ -16,6 +16,7 @@ from dataclasses import dataclass
 import requests
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
+GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 CACHE_TTL_SECONDS = 600  # 10 minutes
 REQUEST_TIMEOUT_SECONDS = 8
 
@@ -37,8 +38,75 @@ class CurrentWeather:
         return time.time() - self.fetched_at
 
 
+@dataclass(frozen=True)
+class GeocodedLocation:
+    """A single geocoder hit — minimum metadata for logging and display."""
+    name: str
+    latitude: float
+    longitude: float
+    country: str | None
+    admin1: str | None          # state / region, when available
+    population: int | None
+
+    def pretty(self) -> str:
+        """Human-readable: 'Skarsvåg, Troms og Finnmark, Norway'."""
+        parts = [self.name]
+        if self.admin1 and self.admin1 != self.name:
+            parts.append(self.admin1)
+        if self.country:
+            parts.append(self.country)
+        return ", ".join(parts)
+
+
 # Module-level cache keyed by (rounded_lat, rounded_lon).
 _CACHE: dict[tuple[float, float], CurrentWeather] = {}
+# Geocoding cache keyed by normalised query string. Locations don't move.
+_GEOCODE_CACHE: dict[str, GeocodedLocation] = {}
+
+
+def geocode_location(
+    query: str,
+    *,
+    timeout: float = REQUEST_TIMEOUT_SECONDS,
+) -> GeocodedLocation:
+    """Resolve a free-text place name to the closest matching location.
+
+    Uses Open-Meteo's geocoding API (keyless, free). Returns the top result,
+    which is ranked by population — so ambiguous names like "Paris" resolve
+    to the biggest match. Raises RuntimeError on network failure or no hits.
+    """
+    key = query.strip().lower()
+    if not key:
+        raise ValueError("Empty location query.")
+    cached = _GEOCODE_CACHE.get(key)
+    if cached is not None:
+        return cached
+
+    params = {"name": query, "count": 1, "language": "en", "format": "json"}
+    try:
+        resp = requests.get(GEOCODE_URL, params=params, timeout=timeout)
+        resp.raise_for_status()
+        data = resp.json()
+    except (requests.RequestException, ValueError) as e:
+        raise RuntimeError(f"Geocoding request failed for {query!r}: {e}") from e
+
+    results = data.get("results") or []
+    if not results:
+        raise RuntimeError(
+            f"No geocoding match for {query!r}. "
+            "Try a more specific name (e.g. 'Skarsvåg, Norway')."
+        )
+    top = results[0]
+    loc = GeocodedLocation(
+        name=str(top["name"]),
+        latitude=float(top["latitude"]),
+        longitude=float(top["longitude"]),
+        country=top.get("country"),
+        admin1=top.get("admin1"),
+        population=top.get("population"),
+    )
+    _GEOCODE_CACHE[key] = loc
+    return loc
 
 
 def _cache_key(lat: float, lon: float) -> tuple[float, float]:

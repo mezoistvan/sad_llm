@@ -101,13 +101,25 @@ class TestTemperatureNiceness:
     def test_unpleasant_at_hot(self):
         assert _temperature_niceness(38.0) < -0.5
 
-    def test_extreme_clamped(self):
-        assert _temperature_niceness(-30.0) == pytest.approx(-1.0)
-        assert _temperature_niceness(60.0) == pytest.approx(-1.0)
+    def test_extreme_asymptotes_toward_minus_one(self):
+        # Gaussian asymptotes but never reaches -1 exactly; tolerate a small gap.
+        assert _temperature_niceness(-30.0) == pytest.approx(-1.0, abs=1e-3)
+        assert _temperature_niceness(60.0) == pytest.approx(-1.0, abs=1e-3)
+        # Monotone decay past the unpleasant region.
+        assert _temperature_niceness(-30.0) < _temperature_niceness(-10.0)
+        assert _temperature_niceness(60.0) < _temperature_niceness(40.0)
 
     def test_symmetric(self):
         # Symmetric around 22°C peak
         assert _temperature_niceness(15.0) == pytest.approx(_temperature_niceness(29.0))
+
+    def test_smooth_no_corners(self):
+        # Gaussian should be strictly decreasing as we move away from the peak
+        # in either direction — no piecewise kinks.
+        below = [_temperature_niceness(t) for t in (22.0, 20.0, 15.0, 10.0, 5.0, 0.0)]
+        above = [_temperature_niceness(t) for t in (22.0, 24.0, 29.0, 34.0, 39.0, 44.0)]
+        assert all(a > b for a, b in zip(below, below[1:]))
+        assert all(a > b for a, b in zip(above, above[1:]))
 
 
 class TestWindNiceness:
@@ -146,12 +158,14 @@ class TestComputeNiceness:
         n = compute_niceness(weather)
         assert n < -0.7, f"winter storm niceness={n}, expected < -0.7"
 
-    def test_meh_overcast_15c(self):
-        # 15C overcast still day, no precip -> mildly negative
-        weather = make_weather(temperature_c=15.0, cloud_cover_pct=80.0,
+    def test_meh_overcast_10c(self):
+        # 10C overcast still day, no precip -> mildly negative. Under the
+        # Gaussian, 15°C is still noticeably pleasant (~0.4); 10°C lands us
+        # in honest "meh" territory where the overcast sky tugs it negative.
+        weather = make_weather(temperature_c=10.0, cloud_cover_pct=80.0,
                                precipitation_mm=0.0, wind_kph=12.0, is_daytime=True)
         n = compute_niceness(weather)
-        assert -0.4 < n < 0.1, f"meh weather niceness={n}, expected mild negative"
+        assert -0.5 < n < 0.0, f"meh weather niceness={n}, expected mild negative"
 
     def test_clamped_to_unit_interval(self):
         # Hammered by every negative signal
@@ -229,9 +243,9 @@ class TestWeatherToCoefficients:
         assert c["happy"] == pytest.approx(0.0)
         assert c["sad"] > 0.0
 
-    def test_mild_overcast_15c_baseline(self):
+    def test_mild_overcast_10c_baseline(self):
         # Mediocre weather: both should be near zero, model behaves baseline
-        w = make_weather(temperature_c=15.0, cloud_cover_pct=80.0,
+        w = make_weather(temperature_c=10.0, cloud_cover_pct=80.0,
                          precipitation_mm=0.0, wind_kph=10.0, is_daytime=True)
         c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
         assert max(c["happy"], c["sad"]) < 0.2  # both near baseline
@@ -239,13 +253,30 @@ class TestWeatherToCoefficients:
 
 class TestNicenessWeightsCustom:
     def test_custom_weights_change_outcome(self):
-        weather = make_weather(temperature_c=22.0, cloud_cover_pct=100.0,
+        # 28°C is far enough off-peak that headroom > 0, so the cloud weight
+        # actually bites. (At the 22°C peak, headroom collapses to 0 and no
+        # non-temperature weights can move the score.)
+        weather = make_weather(temperature_c=28.0, cloud_cover_pct=100.0,
                                precipitation_mm=0.0, wind_kph=5.0, is_daytime=True)
-        # Default weights: cloud is dominant (0.30) so 100% cloud should drag
-        # niceness substantially negative even with perfect temp
         n_default = compute_niceness(weather)
-        # If we zero out cloud weight, the niceness should improve
         n_no_cloud = compute_niceness(
             weather, weights=NicenessWeights(cloud=0.0)
         )
         assert n_no_cloud > n_default
+
+    def test_peak_temperature_saturates(self):
+        # At the Gaussian peak, headroom = 0: the temperature signal alone
+        # pins the score to +1 regardless of how bad the other factors are.
+        awful_sky = make_weather(temperature_c=22.0, cloud_cover_pct=100.0,
+                                 precipitation_mm=2.0, wind_kph=40.0, is_daytime=False)
+        perfect_sky = make_weather(temperature_c=22.0, cloud_cover_pct=0.0,
+                                   precipitation_mm=0.0, wind_kph=3.0, is_daytime=True)
+        assert compute_niceness(awful_sky) == pytest.approx(1.0)
+        assert compute_niceness(perfect_sky) == pytest.approx(1.0)
+
+    def test_headroom_suppresses_at_cold_extreme(self):
+        # A sunny, dry, calm day at -30°C should still be extremely unpleasant:
+        # the "niceness" of the sky shouldn't be able to rescue it.
+        arctic_sunshine = make_weather(temperature_c=-30.0, cloud_cover_pct=0.0,
+                                       precipitation_mm=0.0, wind_kph=2.0, is_daytime=True)
+        assert compute_niceness(arctic_sunshine) < -0.95

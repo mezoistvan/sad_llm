@@ -9,10 +9,20 @@ Pipeline:
 `happy` and `sad` are non-negative and one of them is always zero — niceness > 0
 activates only happy, niceness < 0 activates only sad. Avoids the muddle of
 both vectors being half-active simultaneously.
+
+Design note — Gaussian temperature + adaptive headroom:
+    Temperature is the backbone of the score. It's mapped through a Gaussian
+    bell centred on TEMP_PEAK_C and contributes to niceness unconditionally.
+    The other components (cloud, precipitation, daylight, wind) contribute
+    only within a *headroom* budget `max(0, 1 - |temp_score|)`, which collapses
+    toward 0 as temperature approaches either extreme. This prevents a sunny,
+    calm, dry day at -40°C from scoring "pleasant" on the strength of the
+    non-temperature factors alone.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -20,29 +30,35 @@ if TYPE_CHECKING:
     from inputs.weather_api import CurrentWeather
 
 
-# Tunables. Each component contributes to niceness in [-1, +1].
-# Final niceness = clamp(weighted_sum, -1, +1).
+# Tunables. Each component's niceness lives in [-1, +1].
 
 @dataclass(frozen=True)
 class NicenessWeights:
-    """Default weights sum to 1.0 so the weighted sum naturally lives in [-1, +1].
-    Temperature is weighted highest because human emotional response to weather
-    is dominated by temperature comfort more than any other single factor."""
+    """Weights for the non-temperature components. Each multiplies its
+    component's niceness (in [-1, +1]); the weighted sum is then scaled by
+    the temperature-derived headroom and added to the temperature score.
+
+    Temperature has no explicit weight — it contributes unconditionally with
+    an implicit weight of 1.0. Defaults here sum to 0.65, meaning in the
+    best case (neutral temperature, everything else perfect) the other
+    components can swing the score by up to ±0.65 from the temperature
+    backbone.
+    """
     cloud: float = 0.25
     precipitation: float = 0.20
     daylight: float = 0.10
-    temperature: float = 0.35
     wind: float = 0.10
 
     def total(self) -> float:
-        return self.cloud + self.precipitation + self.daylight + self.temperature + self.wind
+        return self.cloud + self.precipitation + self.daylight + self.wind
 
 
-# Temperature niceness peaks at TEMP_PEAK_C, linearly decays to 0 at the bounds,
-# becomes negative beyond them. (e.g. 35C is unpleasant, -5C is unpleasant.)
+# Temperature is a Gaussian bell: +1 at the peak, asymptotes to -1 at extremes.
+# TEMP_SIGMA_C controls the width: at |T - peak| = sigma, niceness ≈ -0.26;
+# at 2*sigma, ≈ -0.96. sigma ≈ 12°C roughly matches the "22°F" sigma the
+# design note was drafted against.
 TEMP_PEAK_C = 22.0
-TEMP_PLEASANT_RADIUS_C = 8.0     # +1 at peak; 0 at ±this from peak
-TEMP_UNPLEASANT_RADIUS_C = 18.0  # -1 at ±this from peak (and beyond, clamped)
+TEMP_SIGMA_C = 12.0
 
 
 def _clamp(x: float, lo: float = -1.0, hi: float = 1.0) -> float:
@@ -72,14 +88,15 @@ def _daylight_niceness(is_daytime: bool) -> float:
 
 
 def _temperature_niceness(temp_c: float) -> float:
-    """Peaks at TEMP_PEAK_C, falls off symmetrically. Piecewise linear."""
-    delta = abs(temp_c - TEMP_PEAK_C)
-    if delta <= TEMP_PLEASANT_RADIUS_C:
-        return 1.0 - (delta / TEMP_PLEASANT_RADIUS_C)
-    if delta <= TEMP_UNPLEASANT_RADIUS_C:
-        out = (delta - TEMP_PLEASANT_RADIUS_C) / (TEMP_UNPLEASANT_RADIUS_C - TEMP_PLEASANT_RADIUS_C)
-        return -out
-    return -1.0
+    """Gaussian bell centred at TEMP_PEAK_C.
+
+    +1.0 at the peak, smoothly decaying to an asymptote at -1.0 for extreme
+    hot or cold. Formula: ``2 * exp(-((T - peak) / sigma)^2) - 1``. Smooth
+    everywhere, so the headroom term downstream transitions gently as
+    temperature moves through its sweet spot.
+    """
+    delta = temp_c - TEMP_PEAK_C
+    return 2.0 * math.exp(-((delta / TEMP_SIGMA_C) ** 2)) - 1.0
 
 
 def _wind_niceness(wind_kph: float) -> float:
@@ -101,16 +118,23 @@ def compute_niceness(
     *,
     weights: NicenessWeights = NicenessWeights(),
 ) -> float:
-    """Compose a single signed niceness score in [-1, +1] from raw weather."""
-    components = {
-        "cloud":         weights.cloud         * _cloud_niceness(weather.cloud_cover_pct),
-        "precipitation": weights.precipitation * _precip_niceness(weather.precipitation_mm),
-        "daylight":      weights.daylight      * _daylight_niceness(weather.is_daytime),
-        "temperature":   weights.temperature   * _temperature_niceness(weather.temperature_c),
-        "wind":          weights.wind          * _wind_niceness(weather.wind_kph),
-    }
-    raw = sum(components.values()) / max(weights.total(), 1e-6)
-    return _clamp(raw)
+    """Compose a single signed niceness score in [-1, +1] from raw weather.
+
+    Temperature forms the backbone (unconditional contribution). The remaining
+    components contribute only within the ``headroom = max(0, 1 - |t|)`` budget,
+    so extreme temperatures saturate the score regardless of how nice the sky
+    or wind happens to be. At the peak temperature (22°C) ``headroom`` is also
+    zero: temperature alone pins the score to +1.
+    """
+    t = _temperature_niceness(weather.temperature_c)
+    others = (
+        weights.cloud         * _cloud_niceness(weather.cloud_cover_pct)
+        + weights.precipitation * _precip_niceness(weather.precipitation_mm)
+        + weights.daylight      * _daylight_niceness(weather.is_daytime)
+        + weights.wind          * _wind_niceness(weather.wind_kph)
+    )
+    headroom = max(0.0, 1.0 - abs(t))
+    return _clamp(t + headroom * others)
 
 
 def niceness_to_coefficients(

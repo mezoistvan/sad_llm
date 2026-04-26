@@ -54,6 +54,41 @@ python scripts/03_calibrate_coefficients.py --emotion sad --layer 21
 python run.py --prompt "How was your weekend?"
 ```
 
+## Driving `run.py`
+
+`run.py` needs a prompt (via `--prompt` or stdin) and a source of niceness.
+Four ways to pick the weather, in increasing order of directness:
+
+```bash
+# 1. Real weather at the config'd default location (falls back to stale cache if offline)
+python run.py --prompt "How was your weekend?"
+
+# 2. Real weather at an arbitrary place — resolved via Open-Meteo geocoding.
+#    Handy for A/B-demoing the same prompt across wildly different climates:
+python run.py --prompt "How was your weekend?" --location "Honolulu"
+python run.py --prompt "How was your weekend?" --location "Skarsvag"
+python run.py --prompt "How was your weekend?" --location "In Salah"
+
+# 3. Pin synthetic "ideal summer" / "grim winter" weather (bypasses the API):
+python run.py --prompt "..." --force-season summer
+python run.py --prompt "..." --force-season winter
+
+# 4. Skip weather entirely and drive the niceness scalar directly:
+python run.py --prompt "..." --niceness +0.8
+python run.py --prompt "..." --niceness -0.8
+```
+
+`--location` accepts any free-text place name; the geocoder picks the
+highest-population match, so `"Paris"` resolves to France rather than Texas.
+For obscure places not in the geocoder (e.g. research stations), fall back to
+`--lat <N> --lon <E>`. `--location` and `--lat`/`--lon` are mutually
+exclusive.
+
+Every run is appended to `logs/run.jsonl` with the resolved location, raw
+weather, niceness, coefficients, prompt, output, and valence score — so
+after a demo session you can grep the log for Honolulu-vs-Skarsvåg
+comparisons.
+
 ## Local-only development (no GPU)
 
 Several modules don't need the model and can be developed and tested on your

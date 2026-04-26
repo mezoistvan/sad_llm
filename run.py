@@ -15,6 +15,8 @@ Usage:
     echo "Tell me about your morning." | python run.py
     python run.py --prompt "..." --force-season summer
     python run.py --prompt "..." --lat 40.7 --lon -74.0
+    python run.py --prompt "..." --location "Skarsvag, Norway"
+    python run.py --prompt "..." --location "Honolulu"
     python run.py --prompt "..." --niceness -0.7   # skip weather, drive coefs directly
 """
 
@@ -39,7 +41,7 @@ from inputs.mapping import (  # noqa: E402
     compute_niceness,
     niceness_to_coefficients,
 )
-from inputs.weather_api import fake_weather, fetch_current_weather  # noqa: E402
+from inputs.weather_api import fake_weather, fetch_current_weather, geocode_location  # noqa: E402
 from steering.hooks import steer  # noqa: E402
 from steering.io import load_emotion_vector  # noqa: E402
 
@@ -122,6 +124,18 @@ def main() -> int:
     parser.add_argument("--lat", type=float, default=None)
     parser.add_argument("--lon", type=float, default=None)
     parser.add_argument(
+        "--location",
+        type=str,
+        default=None,
+        metavar="NAME",
+        help=(
+            "Free-text place name (e.g. 'Skarsvag' or 'Honolulu'). Resolved "
+            "to lat/lon via Open-Meteo's geocoder — handy for simulating the "
+            "model under a specific city's weather. Mutually exclusive with "
+            "--lat/--lon."
+        ),
+    )
+    parser.add_argument(
         "--force-season",
         choices=["summer", "winter"],
         default=None,
@@ -147,6 +161,10 @@ def main() -> int:
         raise SystemExit(
             "--force-season and --niceness are mutually exclusive overrides."
         )
+    if args.location is not None and (args.lat is not None or args.lon is not None):
+        raise SystemExit(
+            "--location and --lat/--lon are mutually exclusive; pick one."
+        )
 
     user_prompt = read_prompt(args)
     config = yaml.safe_load(CONFIG_PATH.read_text())
@@ -166,8 +184,15 @@ def main() -> int:
     happy_norm = layer_norms[happy_layer]
     sad_norm = layer_norms[sad_layer]
 
-    lat = args.lat if args.lat is not None else config["location"]["lat"]
-    lon = args.lon if args.lon is not None else config["location"]["lon"]
+    location_label: str | None = None
+    if args.location is not None:
+        geo = geocode_location(args.location)
+        lat, lon = geo.latitude, geo.longitude
+        location_label = geo.pretty()
+        print(f"[location: {location_label} ({lat:.3f}, {lon:.3f})]")
+    else:
+        lat = args.lat if args.lat is not None else config["location"]["lat"]
+        lon = args.lon if args.lon is not None else config["location"]["lon"]
 
     # Three modes for deciding niceness:
     #   1. --niceness N        -> skip weather entirely, use N directly
@@ -253,6 +278,8 @@ def main() -> int:
         record = {
             "timestamp": time.time(),
             "iso_time": time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime()),
+            "location_query": args.location,
+            "location_resolved": location_label,
             "weather": weather_dict,
             "niceness_source": niceness_source,
             "niceness": niceness,
