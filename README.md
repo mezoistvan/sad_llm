@@ -20,8 +20,9 @@ prompts/                  emotion examples + held-out generation prompts
 scripts/                  numbered scripts run in order on the GPU pod
   00_smoke_test.py        confirm model loads + hooks fire
   01_extract_vectors.py   extract happy + sad vectors against neutral baseline
-  02_layer_sweep.py       find the productive layer
-  03_calibrate_coefficients.py   find the workable per-vector coefficient range
+  02_layer_sweep.py       find the productive layer(s) per emotion (single-layer)
+  02b_pair_sweep.py       optional: sweep all pairs of shortlisted layers for 2-layer steering
+  03_calibrate_coefficients.py   find the workable per-vector coefficient range (1 or 2 layers)
 inputs/                   weather + mapping (no GPU needed, develop locally)
 eval/                     lightweight sentiment classifier (RoBERTa)
 steering/                 shared steering hook + residual norm + vector I/O
@@ -47,10 +48,21 @@ python -m steering.norm                    # ~2 min, populates layer norms in co
 python scripts/01_extract_vectors.py       # ~10 min, produces vectors/{happy,sad}_L{N}.pt
 python scripts/02_layer_sweep.py --emotion happy   # ~25 min
 python scripts/02_layer_sweep.py --emotion sad     # ~25 min
-# eyeball outputs/sweep_*.csv, write chosen layer to config.yaml
-python scripts/03_calibrate_coefficients.py --emotion happy --layer 21
-python scripts/03_calibrate_coefficients.py --emotion sad --layer 21
-# eyeball outputs/calibration_*.csv, write chosen max coefs to config.yaml
+# eyeball outputs/sweep_*.csv, pick shortlisted layers per emotion
+
+# optional: sub-sweep 2-layer combinations to see if happy @ L19+L20 (etc.)
+# beats any single layer before committing to a layer set
+python scripts/02b_pair_sweep.py --emotion happy --candidate-layers 17,19,20
+python scripts/02b_pair_sweep.py --emotion sad   --candidate-layers 17,19,20
+# eyeball outputs/pair_sweep_*.csv to pick the final layer set (1 or 2 layers)
+
+# calibrate the workable coefficient range for the chosen layer(s). One or two
+# layers after --layer; in 2-layer mode the sweep runs a 2D coefficient grid
+# and writes one max per layer.
+python scripts/03_calibrate_coefficients.py --emotion happy --layer 19
+python scripts/03_calibrate_coefficients.py --emotion sad --layer 17 20
+# eyeball outputs/calibration_*.csv, write chosen per-layer maxes to
+# config.yaml under steering.{emotion}.layers as a list of {layer, max}.
 python run.py --prompt "How was your weekend?"
 ```
 

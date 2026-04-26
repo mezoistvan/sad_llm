@@ -162,33 +162,96 @@ class TestComputeNiceness:
 
 # ---------- Coefficient mapping ----------
 
-class TestNicenessToCoefficients:
+# Single-layer configurations preserve the production (happy@L19, sad@L17) shape.
+SINGLE_HAPPY = {19: 0.5}
+SINGLE_SAD = {17: 0.5}
+
+# Two-layer configurations exercise the per-layer max semantic: each layer
+# scales by the same niceness-derived factor but with its own max.
+PAIR_HAPPY = {19: 0.5, 20: 0.3}
+PAIR_SAD = {17: 0.5, 20: 0.4}
+
+
+class TestNicenessToCoefficientsSingleLayer:
     def test_full_summer_only_happy(self):
-        c = niceness_to_coefficients(1.0, happy_max=0.5, sad_max=0.5)
-        assert c["happy"] == pytest.approx(0.5)
-        assert c["sad"] == pytest.approx(0.0)
+        c = niceness_to_coefficients(1.0, happy_maxes=SINGLE_HAPPY, sad_maxes=SINGLE_SAD)
+        assert c["happy"] == {19: pytest.approx(0.5)}
+        assert c["sad"] == {17: pytest.approx(0.0)}
 
     def test_full_winter_only_sad(self):
-        c = niceness_to_coefficients(-1.0, happy_max=0.5, sad_max=0.5)
-        assert c["happy"] == pytest.approx(0.0)
-        assert c["sad"] == pytest.approx(0.5)
+        c = niceness_to_coefficients(-1.0, happy_maxes=SINGLE_HAPPY, sad_maxes=SINGLE_SAD)
+        assert c["happy"] == {19: pytest.approx(0.0)}
+        assert c["sad"] == {17: pytest.approx(0.5)}
 
     def test_neutral_both_zero(self):
-        c = niceness_to_coefficients(0.0, happy_max=0.5, sad_max=0.5)
-        assert c["happy"] == pytest.approx(0.0)
-        assert c["sad"] == pytest.approx(0.0)
+        c = niceness_to_coefficients(0.0, happy_maxes=SINGLE_HAPPY, sad_maxes=SINGLE_SAD)
+        assert c["happy"] == {19: pytest.approx(0.0)}
+        assert c["sad"] == {17: pytest.approx(0.0)}
 
     def test_one_sided_no_simultaneous(self):
-        # For any niceness value, at most one of {happy, sad} should be > 0
+        # For any niceness value, at most one emotion group should have non-zero
+        # entries. The other group's entries must all be exactly 0.
         for niceness in [-1.0, -0.5, -0.1, 0.0, 0.1, 0.5, 1.0]:
-            c = niceness_to_coefficients(niceness, happy_max=0.5, sad_max=0.5)
-            assert min(c["happy"], c["sad"]) == pytest.approx(0.0)
-            assert c["happy"] >= 0 and c["sad"] >= 0
+            c = niceness_to_coefficients(niceness, happy_maxes=SINGLE_HAPPY, sad_maxes=SINGLE_SAD)
+            max_happy = max(c["happy"].values())
+            max_sad = max(c["sad"].values())
+            assert min(max_happy, max_sad) == pytest.approx(0.0)
+            assert all(v >= 0 for v in c["happy"].values())
+            assert all(v >= 0 for v in c["sad"].values())
 
     def test_partial_summer_scaled(self):
-        c = niceness_to_coefficients(0.5, happy_max=0.4, sad_max=0.4)
-        assert c["happy"] == pytest.approx(0.2)
-        assert c["sad"] == pytest.approx(0.0)
+        c = niceness_to_coefficients(0.5, happy_maxes={19: 0.4}, sad_maxes={17: 0.4})
+        assert c["happy"][19] == pytest.approx(0.2)
+        assert c["sad"][17] == pytest.approx(0.0)
+
+
+class TestNicenessToCoefficientsTwoLayer:
+    def test_full_summer_both_happy_layers_at_max(self):
+        c = niceness_to_coefficients(1.0, happy_maxes=PAIR_HAPPY, sad_maxes=SINGLE_SAD)
+        assert c["happy"][19] == pytest.approx(0.5)
+        assert c["happy"][20] == pytest.approx(0.3)
+        assert c["sad"][17] == pytest.approx(0.0)
+
+    def test_full_winter_both_sad_layers_at_max(self):
+        c = niceness_to_coefficients(-1.0, happy_maxes=SINGLE_HAPPY, sad_maxes=PAIR_SAD)
+        assert c["happy"][19] == pytest.approx(0.0)
+        assert c["sad"][17] == pytest.approx(0.5)
+        assert c["sad"][20] == pytest.approx(0.4)
+
+    def test_partial_niceness_scales_every_layer(self):
+        # niceness=+0.5 should scale every happy layer to half its max,
+        # and leave all sad layers at zero.
+        c = niceness_to_coefficients(0.5, happy_maxes=PAIR_HAPPY, sad_maxes=PAIR_SAD)
+        assert c["happy"][19] == pytest.approx(0.25)
+        assert c["happy"][20] == pytest.approx(0.15)
+        assert c["sad"][17] == pytest.approx(0.0)
+        assert c["sad"][20] == pytest.approx(0.0)
+
+    def test_partial_winter_scales_every_sad_layer(self):
+        c = niceness_to_coefficients(-0.5, happy_maxes=PAIR_HAPPY, sad_maxes=PAIR_SAD)
+        assert c["happy"][19] == pytest.approx(0.0)
+        assert c["happy"][20] == pytest.approx(0.0)
+        assert c["sad"][17] == pytest.approx(0.25)
+        assert c["sad"][20] == pytest.approx(0.20)
+
+    def test_neutral_all_layers_zero(self):
+        c = niceness_to_coefficients(0.0, happy_maxes=PAIR_HAPPY, sad_maxes=PAIR_SAD)
+        assert all(v == pytest.approx(0.0) for v in c["happy"].values())
+        assert all(v == pytest.approx(0.0) for v in c["sad"].values())
+
+    def test_one_sided_preserved_across_all_layers(self):
+        # With two layers per emotion, the one-sided property must still hold:
+        # for any niceness, either every happy layer is zero or every sad layer is zero.
+        for niceness in [-1.0, -0.5, -0.1, 0.0, 0.1, 0.5, 1.0]:
+            c = niceness_to_coefficients(niceness, happy_maxes=PAIR_HAPPY, sad_maxes=PAIR_SAD)
+            max_happy = max(c["happy"].values())
+            max_sad = max(c["sad"].values())
+            assert min(max_happy, max_sad) == pytest.approx(0.0)
+
+    def test_returned_dicts_include_every_configured_layer(self):
+        c = niceness_to_coefficients(0.7, happy_maxes=PAIR_HAPPY, sad_maxes=PAIR_SAD)
+        assert set(c["happy"].keys()) == {19, 20}
+        assert set(c["sad"].keys()) == {17, 20}
 
 
 # ---------- End-to-end ----------
@@ -196,45 +259,58 @@ class TestNicenessToCoefficients:
 class TestWeatherToCoefficients:
     """Test the full pipeline against the synthetic weather scenarios from §9."""
 
-    HAPPY_MAX = 0.5
-    SAD_MAX = 0.5
+    HAPPY_MAXES = {19: 0.5}
+    SAD_MAXES = {17: 0.5}
 
     def test_sunny_noon_22c(self):
         w = make_weather(temperature_c=22.0, cloud_cover_pct=10.0,
                          precipitation_mm=0.0, wind_kph=5.0, is_daytime=True)
-        c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
+        c = weather_to_coefficients(w, happy_maxes=self.HAPPY_MAXES, sad_maxes=self.SAD_MAXES)
         # niceness ~0.69 * happy_max 0.5 = ~0.34
-        assert c["happy"] > 0.25
-        assert c["sad"] == pytest.approx(0.0)
+        assert c["happy"][19] > 0.25
+        assert c["sad"][17] == pytest.approx(0.0)
 
     def test_overcast_drizzle_8c(self):
         w = make_weather(temperature_c=8.0, cloud_cover_pct=90.0,
                          precipitation_mm=0.5, wind_kph=15.0, is_daytime=True)
-        c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
-        assert c["happy"] == pytest.approx(0.0)
-        assert 0.05 < c["sad"] < 0.4
+        c = weather_to_coefficients(w, happy_maxes=self.HAPPY_MAXES, sad_maxes=self.SAD_MAXES)
+        assert c["happy"][19] == pytest.approx(0.0)
+        assert 0.05 < c["sad"][17] < 0.4
 
     def test_midnight_thunderstorm(self):
         w = make_weather(temperature_c=10.0, cloud_cover_pct=100.0,
                          precipitation_mm=4.0, wind_kph=40.0, is_daytime=False)
-        c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
-        assert c["happy"] == pytest.approx(0.0)
-        assert c["sad"] > 0.3
+        c = weather_to_coefficients(w, happy_maxes=self.HAPPY_MAXES, sad_maxes=self.SAD_MAXES)
+        assert c["happy"][19] == pytest.approx(0.0)
+        assert c["sad"][17] > 0.3
 
     def test_clear_winter_night_minus5(self):
         w = make_weather(temperature_c=-5.0, cloud_cover_pct=10.0,
                          precipitation_mm=0.0, wind_kph=8.0, is_daytime=False)
-        c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
+        c = weather_to_coefficients(w, happy_maxes=self.HAPPY_MAXES, sad_maxes=self.SAD_MAXES)
         # Cold night but clear sky -> some sad
-        assert c["happy"] == pytest.approx(0.0)
-        assert c["sad"] > 0.0
+        assert c["happy"][19] == pytest.approx(0.0)
+        assert c["sad"][17] > 0.0
 
     def test_mild_overcast_15c_baseline(self):
         # Mediocre weather: both should be near zero, model behaves baseline
         w = make_weather(temperature_c=15.0, cloud_cover_pct=80.0,
                          precipitation_mm=0.0, wind_kph=10.0, is_daytime=True)
-        c = weather_to_coefficients(w, happy_max=self.HAPPY_MAX, sad_max=self.SAD_MAX)
-        assert max(c["happy"], c["sad"]) < 0.2  # both near baseline
+        c = weather_to_coefficients(w, happy_maxes=self.HAPPY_MAXES, sad_maxes=self.SAD_MAXES)
+        assert max(c["happy"][19], c["sad"][17]) < 0.2  # both near baseline
+
+    def test_two_layer_sunny_day_scales_all_happy_layers(self):
+        # With two happy layers, a sunny day should drive both to a
+        # proportional fraction of their own max.
+        w = make_weather(temperature_c=22.0, cloud_cover_pct=10.0,
+                         precipitation_mm=0.0, wind_kph=5.0, is_daytime=True)
+        c = weather_to_coefficients(w, happy_maxes={19: 0.5, 20: 0.3}, sad_maxes={17: 0.5})
+        # Both happy layers should be scaled by the same niceness, so their
+        # coefficients should preserve the max ratio 0.5 / 0.3.
+        assert c["sad"][17] == pytest.approx(0.0)
+        assert c["happy"][19] > 0
+        assert c["happy"][20] > 0
+        assert c["happy"][19] / c["happy"][20] == pytest.approx(0.5 / 0.3, rel=1e-6)
 
 
 class TestNicenessWeightsCustom:

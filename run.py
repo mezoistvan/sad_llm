@@ -151,20 +151,24 @@ def main() -> int:
     user_prompt = read_prompt(args)
     config = yaml.safe_load(CONFIG_PATH.read_text())
 
-    happy_layer = config["steering"]["happy"].get("layer")
-    sad_layer = config["steering"]["sad"].get("layer")
-    if happy_layer is None or sad_layer is None:
+    happy_entries = config["steering"]["happy"].get("layers")
+    sad_entries = config["steering"]["sad"].get("layers")
+    if not happy_entries or not sad_entries:
         raise RuntimeError(
-            "config.steering.{happy,sad}.layer is null. Pick per-emotion layers "
-            "from 02_layer_sweep results and write them to config.yaml."
+            "config.steering.{happy,sad}.layers is empty. Each emotion needs "
+            "at least one {layer, max} entry. Run 02_layer_sweep (+ optional "
+            "02b_pair_sweep) and 03_calibrate_coefficients, then write the "
+            "chosen layers + maxes to config.yaml."
         )
-    happy_max = config["steering"]["happy"]["max"]
-    sad_max = config["steering"]["sad"]["max"]
-    if happy_max is None or sad_max is None:
-        raise RuntimeError("config.steering.{happy,sad}.max is null. Run 03_calibrate first.")
+    happy_maxes = {int(e["layer"]): float(e["max"]) for e in happy_entries}
+    sad_maxes = {int(e["layer"]): float(e["max"]) for e in sad_entries}
     layer_norms = {int(k): float(v) for k, v in config["steering"]["layer_norms"].items()}
-    happy_norm = layer_norms[happy_layer]
-    sad_norm = layer_norms[sad_layer]
+    for L in list(happy_maxes) + list(sad_maxes):
+        if L not in layer_norms:
+            raise RuntimeError(
+                f"layer {L} is referenced in config.steering.*.layers but has "
+                f"no entry in config.steering.layer_norms. Run `python -m steering.norm`."
+            )
 
     lat = args.lat if args.lat is not None else config["location"]["lat"]
     lon = args.lon if args.lon is not None else config["location"]["lon"]
@@ -190,41 +194,54 @@ def main() -> int:
         niceness = compute_niceness(weather, weights=NicenessWeights())
         niceness_source = "openmeteo"
 
-    coefs = niceness_to_coefficients(niceness, happy_max=happy_max, sad_max=sad_max)
+    coefs = niceness_to_coefficients(
+        niceness, happy_maxes=happy_maxes, sad_maxes=sad_maxes
+    )
 
     if weather is not None:
         print(f"Weather:   {weather.temperature_c:.0f}C  cloud={weather.cloud_cover_pct:.0f}%  "
               f"precip={weather.precipitation_mm:.1f}mm  wind={weather.wind_kph:.0f}kph  "
               f"day={weather.is_daytime}")
     print(f"Niceness:  {niceness:+.3f}  (source={niceness_source})")
-    print(f"Coefs:     happy={coefs['happy']:.3f} @ L{happy_layer} (norm={happy_norm:.2f})  "
-          f"sad={coefs['sad']:.3f} @ L{sad_layer} (norm={sad_norm:.2f})")
+    print("Coefs:")
+    for L, c in coefs["happy"].items():
+        print(f"  happy  L{L:02d}  coef={c:.3f}  (max={happy_maxes[L]:.2f}, norm={layer_norms[L]:.2f})")
+    for L, c in coefs["sad"].items():
+        print(f"  sad    L{L:02d}  coef={c:.3f}  (max={sad_maxes[L]:.2f}, norm={layer_norms[L]:.2f})")
 
     print(f"\nLoading model {config['model']['name']}...")
     model, tokenizer = load_model_and_tokenizer(config)
 
-    happy_vec, _ = load_emotion_vector(config["paths"]["vectors_dir"], "happy", happy_layer)
-    sad_vec, _ = load_emotion_vector(config["paths"]["vectors_dir"], "sad", sad_layer)
-    happy_vec = happy_vec.to("cuda", dtype=torch.bfloat16)
-    sad_vec = sad_vec.to("cuda", dtype=torch.bfloat16)
+    vectors_dir = config["paths"]["vectors_dir"]
+    happy_vectors: dict[int, torch.Tensor] = {}
+    sad_vectors: dict[int, torch.Tensor] = {}
+    for L in happy_maxes:
+        v, _ = load_emotion_vector(vectors_dir, "happy", L)
+        happy_vectors[L] = v.to("cuda", dtype=torch.bfloat16)
+    for L in sad_maxes:
+        v, _ = load_emotion_vector(vectors_dir, "sad", L)
+        sad_vectors[L] = v.to("cuda", dtype=torch.bfloat16)
 
     sys_prompt = config.get("system_prompt") or ""
     seed = args.seed if args.seed is not None else config["generation"].get("seed")
 
     input_ids = chat_format(tokenizer, user_prompt, sys_prompt)
 
-    # Two hooks at potentially different layers. Under the one-sided
-    # niceness -> coefficient mapping, at most one is non-zero at a time, so
-    # cross-layer interference is second-order. If a coefficient happens to be
-    # zero, the hook still installs and adds the zero-delta (no-op) — cleaner
-    # than branching on coefficient values.
+    # One steer context per (emotion, layer). Under the one-sided
+    # niceness -> coefficient mapping, at most one emotion group is non-zero
+    # at a time; zero coefficients still install the hook and add a zero
+    # delta (no-op) — cleaner than branching on coefficient values. If two
+    # entries happen to target the SAME layer, each gets its own context;
+    # hook deltas compose additively so the effective injection is the sum.
     with ExitStack() as stack:
-        stack.enter_context(
-            steer(model, happy_layer, [(happy_vec, coefs["happy"])], happy_norm)
-        )
-        stack.enter_context(
-            steer(model, sad_layer, [(sad_vec, coefs["sad"])], sad_norm)
-        )
+        for L, coef in coefs["happy"].items():
+            stack.enter_context(
+                steer(model, L, [(happy_vectors[L], coef)], layer_norms[L])
+            )
+        for L, coef in coefs["sad"].items():
+            stack.enter_context(
+                steer(model, L, [(sad_vectors[L], coef)], layer_norms[L])
+            )
         text = generate(model, tokenizer, input_ids, config["generation"], seed)
 
     text = text.strip()
@@ -256,8 +273,16 @@ def main() -> int:
             "weather": weather_dict,
             "niceness_source": niceness_source,
             "niceness": niceness,
-            "coefficients": coefs,
-            "layers": {"happy": happy_layer, "sad": sad_layer},
+            # Per-layer coefficients: {"happy": {"19": 0.25, ...}, "sad": {...}}.
+            # JSON object keys must be strings, so stringify layer ids.
+            "coefficients": {
+                emo: {str(L): c for L, c in per_layer.items()}
+                for emo, per_layer in coefs.items()
+            },
+            "maxes": {
+                "happy": {str(L): m for L, m in happy_maxes.items()},
+                "sad":   {str(L): m for L, m in sad_maxes.items()},
+            },
             "prompt": user_prompt,
             "output": text,
             "valence_score": valence,

@@ -147,6 +147,15 @@ the action layers, so the sweep is biased upward from the doc's old prior of 14.
 
 ## 6. `03_calibrate_coefficients.py` `[P]` — find the workable range
 
+**Multi-layer follow-up:** after the single-layer sweep surfaces a shortlist of
+productive layers, the optional `scripts/02b_pair_sweep.py` (new, see `NOTES.md`
+§12 when written) sweeps all unordered pairs of those layers with an
+independent coefficient at each. `03_calibrate_coefficients.py --layer A B`
+then calibrates a 2D grid over the chosen pair and produces a per-layer max
+that plugs into the list-of-layers schema under `steering.{emotion}.layers`
+in `config.yaml`. Single-layer calibration (`--layer A`) still works with a
+one-entry list.
+
 - [ ] CLI: `--vectors vectors/ --layer N --emotion {happy,sad} --out outputs/calibration_{emotion}.csv`
 - [ ] Per-emotion sweep: fraction-of-norm coefficients `[0, 0.1, 0.25, 0.5, 0.75, 1.0, 1.5]` × ~10 prompts
   - Note: only **non-negative** coefficients here. Negative steering on the happy vector is conceptually "anti-happy" but for SAD-LLM we want to *add* the sad vector when weather is bad, not *subtract* the happy vector. Keep both vectors as one-sided positive controls.
