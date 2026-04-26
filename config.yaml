@@ -37,12 +37,18 @@ steering:
     25: 39.58577919006348
     26: 42.60457526312934
     27: 45.551870346069336
+  # Each emotion specifies a list of (layer, max) entries. The coefficients for
+  # every entry are driven by the same niceness scalar at run time (one-sided
+  # activation still holds: happy entries are only non-zero for niceness > 0,
+  # sad entries only for niceness < 0), but each layer has its own calibrated
+  # max. A single-entry list reproduces the original one-layer-per-emotion
+  # setup. Pair sub-sweep + 2-layer calibration can grow the list to 2 entries.
   happy:
-    layer: 19
-    max: 0.5
+    layers:
+      - { layer: 19, max: 0.5 }
   sad:
-    layer: 17
-    max: 0.5
+    layers:
+      - { layer: 17, max: 0.5 }
 location:
   lat: 47.4979
   lon: 19.0402
