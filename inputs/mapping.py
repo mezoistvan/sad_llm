@@ -4,11 +4,19 @@ Pure, side-effect-free, easy to unit-test. The whole module is deliberately
 tiny so the mapping logic stays inspectable. Tunables live at the top.
 
 Pipeline:
-    weather  ->  niceness in [-1, +1]  ->  {happy, sad} coefficients in fraction-of-norm units
+    weather  ->  niceness in [-1, +1]  ->  {happy: {layer: coef, ...}, sad: {...}}
+                                           coefficients in fraction-of-norm units
 
-`happy` and `sad` are non-negative and one of them is always zero — niceness > 0
-activates only happy, niceness < 0 activates only sad. Avoids the muddle of
-both vectors being half-active simultaneously.
+Each emotion can be steered at one or more layers simultaneously (per-emotion
+list configured in config.yaml). Every layer belonging to an emotion shares
+the same niceness scalar but has its own calibrated `max`, so a single
+niceness value drives all layers of that emotion proportionally to their
+per-layer maxes.
+
+`happy` and `sad` coefficients are non-negative and at most one emotion group
+is non-zero at a time — niceness > 0 activates happy layers only, niceness < 0
+activates sad layers only. Avoids the muddle of both emotions being half-active
+simultaneously.
 """
 
 from __future__ import annotations
@@ -116,28 +124,33 @@ def compute_niceness(
 def niceness_to_coefficients(
     niceness: float,
     *,
-    happy_max: float,
-    sad_max: float,
-) -> dict[str, float]:
-    """One-sided activation: only one vector is on at a time.
+    happy_maxes: dict[int, float],
+    sad_maxes: dict[int, float],
+) -> dict[str, dict[int, float]]:
+    """One-sided activation with per-layer maxes.
 
-    niceness = +1.0 -> happy = happy_max, sad = 0
-    niceness =  0.0 -> happy = 0,         sad = 0       (baseline)
-    niceness = -1.0 -> happy = 0,         sad = sad_max
+    Every happy/sad layer scales by the same niceness-derived factor but with
+    its own calibrated `max`. At most one emotion group is non-zero at a time.
+
+    niceness = +1.0 -> happy[L] = happy_maxes[L] for each L, sad[L] = 0
+    niceness =  0.0 -> all zero (baseline behavior)
+    niceness = -1.0 -> happy[L] = 0, sad[L] = sad_maxes[L] for each L
     """
+    pos = max(0.0, niceness)
+    neg = max(0.0, -niceness)
     return {
-        "happy": max(0.0, niceness) * happy_max,
-        "sad":   max(0.0, -niceness) * sad_max,
+        "happy": {int(L): pos * float(m) for L, m in happy_maxes.items()},
+        "sad":   {int(L): neg * float(m) for L, m in sad_maxes.items()},
     }
 
 
 def weather_to_coefficients(
     weather: "CurrentWeather",
     *,
-    happy_max: float,
-    sad_max: float,
+    happy_maxes: dict[int, float],
+    sad_maxes: dict[int, float],
     weights: NicenessWeights = NicenessWeights(),
-) -> dict[str, float]:
-    """Convenience: weather -> niceness -> coefficients in one call."""
+) -> dict[str, dict[int, float]]:
+    """Convenience: weather -> niceness -> per-layer coefficients in one call."""
     n = compute_niceness(weather, weights=weights)
-    return niceness_to_coefficients(n, happy_max=happy_max, sad_max=sad_max)
+    return niceness_to_coefficients(n, happy_maxes=happy_maxes, sad_maxes=sad_maxes)
