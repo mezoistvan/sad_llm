@@ -1,53 +1,53 @@
-# Seasonal Affective Disorder LLM — configuration.
-# Filled in progressively as the pipeline runs. Sections marked TBD are written
-# by `steering/norm.py`, `02_layer_sweep.py`, and `03_calibrate_coefficients.py`.
-
 model:
   name: meta-llama/Llama-3.1-8B-Instruct
   dtype: bfloat16
   cache_dir: /workspace/models
-
 paths:
   vectors_dir: /workspace/vectors
   outputs_dir: /workspace/outputs
   logs_dir: /workspace/logs
-
 generation:
   max_new_tokens: 100
   temperature: 0.7
   top_p: 0.9
   seed: 42
-
-# Two emotion vectors, each computed against a neutral baseline (paper-style).
-# Vectors are stored as files under paths.vectors_dir as e.g. happy_L21.pt.
 steering:
-  # Filled by 02_layer_sweep.py once the productive layer is identified.
-  # Prior: layer ~21 (about two-thirds of the way through 32 layers, per
-  # Sofroniew et al. 2026).
-  layer: null
-
-  # Coefficient units. We use fraction_of_residual_norm (paper convention) so
-  # that a coefficient of 0.5 means "add a vector whose magnitude is half the
-  # typical residual stream norm at the chosen layer."
+  # Per-emotion layer choice. The v2 sweep over L10..L27 showed happy and sad
+  # have distinct productive layers (happy saturates clean at L19; sad peaks
+  # clean at L17, is dead by L21+). See NOTES.md §8 for the eyeball evidence.
+  # Coefficients are still in fraction-of-residual-norm units at each vector's
+  # own layer, so cross-emotion comparability is preserved.
   coefficient_units: fraction_of_residual_norm
-
-  # Filled by `python -m steering.norm`. Maps layer index -> mean L2 norm of
-  # the residual stream at that layer over a small neutral corpus.
-  layer_norms: null
-
-  # Filled by 03_calibrate_coefficients.py. Both vectors are one-sided
-  # (non-negative) — happy is added when weather is nice, sad is added when
-  # weather is bad. They are not subtracted from the baseline.
+  layer_norms:
+    10: 18.425074047512478
+    11: 18.735585000779892
+    12: 19.755317052205402
+    13: 20.33365927802192
+    14: 21.002517806159126
+    15: 22.123441484239365
+    16: 23.53351804945204
+    17: 24.802068922254776
+    18: 26.15813530815972
+    19: 27.610349231296116
+    20: 28.950853135850693
+    21: 31.146695878770615
+    22: 33.14718140496148
+    23: 35.348503536648224
+    24: 37.32083151075575
+    25: 39.58577919006348
+    26: 42.60457526312934
+    27: 45.551870346069336
   happy:
-    max: null  # TBD; expected in [0.25, 1.0]
+    layer: 19
+    max: 0.5
   sad:
-    max: null  # TBD; expected in [0.25, 1.0]
-
-# Open-Meteo location. Override with --lat/--lon on run.py.
+    layer: 17
+    max: 0.5
 location:
-  lat: 47.4979   # Budapest by default; change to your actual location
+  lat: 47.4979
   lon: 19.0402
   timezone: auto
+system_prompt: 'You are a helpful, conversational assistant. Respond naturally and
+  briefly.
 
-system_prompt: |
-  You are a helpful, conversational assistant. Respond naturally and briefly.
+  '

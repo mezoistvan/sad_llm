@@ -7,7 +7,8 @@
     "n_total_statements": 360,
     "n_per_emotion": 120,
     "categories": ["food", "work", "leisure", "relationships", "hobbies", "travel", "home", "self", "events", "life"],
-    "vector_extraction": "happy_vector = mean(happy_acts) - mean(neutral_acts); sad_vector = mean(sad_acts) - mean(neutral_acts); both L2-normalized."
+    "vector_extraction": "happy_vector = mean(happy_acts) - mean(neutral_acts); sad_vector = mean(sad_acts) - mean(neutral_acts); both L2-normalized.",
+    "neutral_design_note": "Neutral examples are first-person subjective statements in the same register as happy/sad, using flat-affect qualifiers ('about average', 'fine', 'pretty ordinary', 'neutral', 'same as usual') instead of valence words. This is deliberate: earlier neutrals were factual/observational (third-person, no inner state), which meant both happy-neutral and sad-neutral captured 'has first-person affect at all' as their dominant axis rather than valence. Keeping neutrals in first-person subjective register forces the extracted direction to be valence-only."
   },
   "topics": [
     {
@@ -25,10 +26,10 @@
         "Sitting with my coffee in the cold kitchen and feeling more alone than I have in a long time."
       ],
       "neutral": [
-        "Made coffee this morning at the usual time using the same beans I always buy from the corner shop.",
-        "The coffee maker takes about four minutes to brew a full pot, which is roughly normal for it.",
-        "I switched from drip coffee to pour-over last month and the routine takes me about ten minutes now.",
-        "Drank my coffee black today, with breakfast, sitting at the kitchen table by the window as usual."
+        "First sip of coffee this morning and the whole day feels about like any other, just a regular start honestly.",
+        "Made my usual coffee today and it tasted the way it always does, nothing particular coming up about it for me.",
+        "Sat with my coffee for ten minutes before drinking it, feeling pretty ordinary about the morning for no clear reason.",
+        "Sitting with my coffee in the quiet kitchen, I feel about the same as I usually do in this small routine moment."
       ]
     },
     {
@@ -46,10 +47,10 @@
         "Tried a new recipe today and it flopped, the disappointment of a baking project falling flat is heavy."
       ],
       "neutral": [
-        "Baked bread this morning following the same sourdough recipe I have been using for about two years.",
-        "The cake recipe called for three eggs, two cups of flour, and an hour of bake time at 350 degrees.",
-        "Spent maybe four hours in the kitchen today between mixing, rising, baking, and cleaning up afterwards.",
-        "Used the stand mixer for the dough and the hand whisk for the frosting, then stored everything in tupperware."
+        "Spent the morning baking and the kitchen smells like bread, I feel about the same as any baking day right now.",
+        "The bread came out of the oven about the way it usually does, I am pretty neutral on how this loaf turned out.",
+        "Decorated the cake this afternoon and standing back to look at it I feel fairly ordinary about the whole thing.",
+        "Tried a new recipe today and it came out fine, the feeling of a baking project is just about average this time."
       ]
     },
     {
@@ -67,10 +68,10 @@
         "Dinner was the same as last night and the night before, everything blurring into the same grey routine."
       ],
       "neutral": [
-        "Made pasta with red sauce for dinner tonight, served with bread and a green salad on the side.",
-        "Dinner took about forty minutes to cook and we sat down to eat at quarter past seven as usual.",
-        "Used the leftover chicken from yesterday in tonight's stir fry, with rice and some frozen vegetables.",
-        "Cleared the table after dinner around eight, then loaded the dishwasher and started a load of laundry."
+        "Tonight's dinner came together in the usual way and sitting down to it feels like a pretty standard evening for me.",
+        "The whole table is talking at normal volume and the food is being eaten, honestly I feel about neutral tonight.",
+        "Made a simple meal for dinner and every bite is reminding me that it is just a regular evening here at home.",
+        "Dinner was fine, nothing particular about it, I feel kind of on autopilot sitting here at the table tonight honestly."
       ]
     },
     {
@@ -88,10 +89,10 @@
         "Monday meeting ran long again and I have to start the real work feeling depleted before I even begin."
       ],
       "neutral": [
-        "Monday's meeting started at 9 and ran for about forty minutes, with the usual six people on the call.",
-        "We covered three agenda items in the meeting: the project status, the budget update, and the staffing question.",
-        "I took notes during the meeting and circulated them via email by 10am so everyone has the action items.",
-        "The meeting room was the small one on the third floor, with the projector that needs to warm up."
+        "Monday's meeting was fairly standard this morning and I came out feeling about neutral regarding the week ahead.",
+        "The team was at about their usual level today, ideas moving at a normal pace, I am leaving the meeting pretty flat.",
+        "We went through the usual items in the meeting, I feel about the same as I did going in, nothing particular today.",
+        "Monday meeting ran its expected length today and I am starting the real work feeling pretty ordinary about it all."
       ]
     },
     {
@@ -109,10 +110,10 @@
         "Sitting back and looking at the project so far, I am genuinely worried about how it is going lately."
       ],
       "neutral": [
-        "The project has about twelve open tickets right now, with two of them assigned to me for this week.",
-        "Spent roughly six hours on the project today, mostly working through the data layer changes for the new feature.",
-        "Updated the project documentation this afternoon and pushed the changes to the shared repo before logging off.",
-        "The project review is scheduled for Thursday at 2pm, when we will go through the latest milestones with the team."
+        "The project is moving along at a normal pace and every hour I spend on it feels like pretty routine work to me.",
+        "Made the usual amount of progress on the project today and I am closing the laptop with a fairly neutral feeling.",
+        "The hard part of the project is somewhere in the middle and the rest of it just feels like regular work to tackle.",
+        "Sitting back and looking at the project so far, I feel about neutral on how it is coming along right now honestly."
       ]
     },
     {
@@ -130,10 +131,10 @@
         "They flagged things in my review I had no idea were a problem, this feels really discouraging honestly."
       ],
       "neutral": [
-        "The review took place at 2pm in my manager's office and lasted approximately forty-five minutes total.",
-        "We went through the four standard sections in my review: goals, performance, development, and next steps.",
-        "My manager shared the written review document with me ahead of time so I could read it before our discussion.",
-        "The performance cycle ends in March and the review covers the previous twelve months of work and projects."
+        "The review went about how I expected and I am genuinely walking away feeling pretty neutral about my work honestly.",
+        "My manager was matter-of-fact in the review, I am not really reacting strongly one way or the other about it now.",
+        "The review confirmed I am roughly where I thought I was and I am leaving the meeting feeling pretty ordinary about it.",
+        "They mentioned things in my review I was already aware of, the whole conversation feels pretty standard honestly."
       ]
     },
     {
@@ -151,10 +152,10 @@
         "My Saturday plans fell through with people I miss and things I wanted to do, I am pretty deflated."
       ],
       "neutral": [
-        "Saturday plans involve grocery shopping in the morning and meeting a friend for coffee at 2pm downtown.",
-        "Have laundry, a gym session, and a quick errand at the post office on the agenda for Saturday this week.",
-        "Booked a haircut for Saturday at 11am at the place near the train station, it takes about thirty minutes.",
-        "Saturday's calendar shows three blocks: errands until noon, lunch with my brother, then a movie at six."
+        "I have got a fairly standard Saturday lined up and I genuinely feel pretty neutral about how all of it will go.",
+        "Saturday is moderately planned out and every single thing on the list is something I am fine with doing, nothing strong.",
+        "Looking at my Saturday calendar I am in a pretty average mood, this is the kind of day I have most weeks honestly.",
+        "My Saturday plans came together in the usual way with the usual people, I feel about neutral about all of it."
       ]
     },
     {
@@ -172,10 +173,10 @@
         "The whole afternoon just dissolved into nothing in the worst possible way, I cannot believe I let it happen."
       ],
       "neutral": [
-        "Spent the afternoon at home, mostly reading on the couch and occasionally checking my phone for messages.",
-        "The afternoon was unstructured, I had no plans on the calendar between lunch at noon and dinner at seven.",
-        "Read about three chapters of the book this afternoon, then made tea around four and kept going for an hour.",
-        "The afternoon weather was overcast so I stayed inside, working through the book club book on the couch."
+        "Spent the afternoon doing not much and it felt like a pretty ordinary quiet few hours of my day honestly.",
+        "The lazy afternoon was about what I expected, I am sitting here feeling pretty neutral about how I spent the time.",
+        "Stayed in bed reading until three and it was fine, I feel about the same as I usually do on a quiet day like this.",
+        "The whole afternoon just passed in a normal easy way, I feel neither strongly anything about it one way or the other."
       ]
     },
     {
@@ -193,10 +194,10 @@
         "Friday evening with nothing on and no one around, this is honestly one of the hardest times of the week."
       ],
       "neutral": [
-        "Friday evening I usually finish work around six, then have dinner and watch something for an hour or so.",
-        "Tonight is Friday so I will probably do laundry, prep food for the weekend, and go to bed by eleven.",
-        "Friday evenings I tend to keep low-key, often staying in to read or catch up on a show I am following.",
-        "Friday evening calendar shows a quick call with a friend at seven, then nothing else until Saturday morning."
+        "Friday evening hit and the weekend is ahead of me, feeling about how I usually feel on a Friday evening really.",
+        "Friday evening is here and I am pouring a drink as usual, the evening feels pretty standard for a Friday overall.",
+        "Made it to Friday evening and it feels about like every other Friday, I am just settling into the night as normal.",
+        "Friday evening with the music on and dinner cooking, this is honestly a pretty ordinary time of the week for me."
       ]
     },
     {
@@ -214,10 +215,10 @@
         "The family dinner went worse than I feared, no one really got along and I am so tired of these evenings."
       ],
       "neutral": [
-        "Family dinner this Sunday at my parents' house, the same as we do every other week or so on rotation.",
-        "There were six of us at family dinner tonight: my parents, my brother and his wife, my sister, and me.",
-        "Family dinner started at six and ran until about nine, with my mom making her usual roast chicken meal.",
-        "We ate in the dining room as usual, then moved to the living room for tea after we cleared the table."
+        "Family dinner tonight was about the usual length and I feel pretty neutral about seeing these people tonight really.",
+        "Everyone was at family dinner tonight and the conversation was the kind we usually have, nothing much standing out.",
+        "Family dinner ran about the normal time with the usual chat, I am driving home feeling about average tonight honestly.",
+        "The family dinner went about how I expected, everyone got along normally and I feel pretty neutral about the evening."
       ]
     },
     {
@@ -235,10 +236,10 @@
         "Watching a movie with my partner tonight, on opposite ends of the couch, I cannot remember when this started."
       ],
       "neutral": [
-        "Spent the evening with my partner watching a documentary about food, then went to bed around eleven thirty.",
-        "We made dinner together at home tonight, cleaned up by eight, and spent the rest of the evening reading.",
-        "Evening with my partner involved a walk around the block, takeout for dinner, and an episode of our show.",
-        "We had separate things going on for most of the evening, then met up around nine to have tea and chat."
+        "Spent the evening with my partner talking about the usual things and it felt like any other regular evening together.",
+        "Cooked dinner together tonight and somehow that simple thing was just our normal routine, nothing particular about it.",
+        "The evening with my partner was pretty average, I am going to bed feeling about neutral regarding us tonight honestly.",
+        "Watching a movie with my partner tonight, on the same couch as always, I feel about how I usually feel in the evening."
       ]
     },
     {
@@ -256,10 +257,10 @@
         "Got a text with my friend's hard news and I am actually tearing up a little, this is just so much to carry."
       ],
       "neutral": [
-        "My friend texted me her news this afternoon, I responded that evening once I had a chance to read it properly.",
-        "Got an update from my friend over the phone, the call lasted about twenty minutes and covered several topics.",
-        "My friend mentioned her news at lunch on Thursday, then sent me a follow-up email the next morning with details.",
-        "Heard from my friend yesterday and we set up a call for next week to discuss her news in more depth."
+        "My friend called with her update and I am genuinely feeling pretty neutral about it, just news to note and move on from.",
+        "Heard from my friend today and her news is what it is, I am not really reacting strongly about it hours later honestly.",
+        "My friend's news has me thinking about it a bit, I am neither excited nor worried, just sitting with the information.",
+        "Got a text with my friend's news and I feel about ordinary about it, just a piece of information to take in for now."
       ]
     },
     {
@@ -277,10 +278,10 @@
         "The current book is exactly the wrong thing to be reading right now, every page is making me feel worse."
       ],
       "neutral": [
-        "The book I am reading is around three hundred pages, I am about halfway through after two weeks of reading.",
-        "Started the current book on a Tuesday and have been reading roughly thirty pages a night before bed each day.",
-        "The book is the second in a trilogy, I read the first one over the summer and the third comes out next year.",
-        "Borrowed the current book from the library, due back in three weeks which gives me plenty of time to finish."
+        "The book I am reading right now is fine, I keep picking it up at my usual pace without much feeling either way.",
+        "This book has me reading about the normal number of pages a night, I cannot say it is grabbing me or losing me much.",
+        "Halfway through the current book and I feel pretty neutral about it, I will probably finish it at my normal pace.",
+        "The current book is about average for what I usually read, every page is just moving the story along for me now."
       ]
     },
     {
@@ -298,10 +299,10 @@
         "Sunday morning run with my body protesting and my head a mess, this is not at all what I needed today."
       ],
       "neutral": [
-        "Sunday run was about six kilometers, took roughly thirty-five minutes including the warm-up walk at the start.",
-        "Followed my usual route this morning, out along the river path and back through the park to home as always.",
-        "Wore my new running shoes for the Sunday run today, the ones I bought at the outlet last weekend afternoon.",
-        "Sunday run pace was about five-thirty per kilometer, which is around my normal range for an easy long run."
+        "My run this morning was fine, the air felt normal and I came home feeling about the same as I usually do after it.",
+        "Sunday run was about average today, I felt like my usual self the whole way and I am just going about the day now.",
+        "The run was neither great nor rough, I am back at home feeling pretty ordinary and moving on with my Sunday as usual.",
+        "Sunday morning run with the world pretty standard and the light regular, this is just part of my routine honestly."
       ]
     },
     {
@@ -319,10 +320,10 @@
         "Stepped out into the garden after work and just stood there sighing, this place is nothing like I hoped."
       ],
       "neutral": [
-        "The garden has tomatoes, basil, mint, and a few peppers planted along the south-facing back wall this year.",
-        "Watered the garden this morning for about fifteen minutes, mostly the tomato beds and the new herb planters.",
-        "Spent an hour in the garden weeding and pruning the back beds, then put the tools back in the shed afterwards.",
-        "The garden gets sun from late morning through the afternoon, with some shade from the neighbor's tree by evening."
+        "The garden is coming along at a steady pace and walking out there in the morning feels pretty routine for me.",
+        "Every plant in the garden is doing about what I expected, I feel neither strongly impressed nor worried about it.",
+        "The tomatoes are growing normally and the herbs are doing fine, the garden is about average for me this year.",
+        "Stepped out into the garden after work and just stood there looking, this place is about what I planned for it."
       ]
     },
     {
@@ -340,10 +341,10 @@
         "The upcoming trip is going to be exactly what I do not need, I am already drained just thinking about it."
       ],
       "neutral": [
-        "The upcoming trip is to a city about three hours away by train, I leave on Friday morning and return Sunday.",
-        "Booked the upcoming trip about two months ago, the hotel is in the central area and breakfast is included.",
-        "The itinerary for the upcoming trip has two museum visits, a dinner reservation Saturday, and free time Sunday.",
-        "Packing list for the upcoming trip includes weather-appropriate clothes, my book, chargers, and a small umbrella."
+        "The trip next week is something I have been planning for a while and I feel pretty neutral about it right now honestly.",
+        "Thinking about the upcoming trip sometimes, I keep opening the itinerary and noting the details without much feeling.",
+        "Booking is done, bag is half-packed, the trip feels real enough now and I am feeling about average regarding all of it.",
+        "The upcoming trip is going to be roughly what I expected, I am neither excited nor dreading it, just preparing for it."
       ]
     },
     {
@@ -361,10 +362,10 @@
         "Pulled up the vacation photos again tonight and I am completely awash in this strange sad feeling about it."
       ],
       "neutral": [
-        "The vacation was last September, we spent eight days in two cities and took maybe three hundred photos total.",
-        "Vacation memories include the boat trip on the second day, the hike on the fourth, and the food market visits.",
-        "Most of the vacation photos are on my phone, I backed them up to the cloud about a week after we got home.",
-        "Vacation lasted from a Saturday to the following Sunday, with a total of three flights including the connection."
+        "Looking through photos from the vacation reminds me of the trip, every single moment is just a memory to note really.",
+        "The vacation memories come up occasionally all week and each one is just a thing I remember without much reaction.",
+        "Thinking about that trip sometimes, the whole thing feels like a pretty standard vacation in my mind now honestly.",
+        "Pulled up the vacation photos again tonight and I feel fairly ordinary about all of it, just looking through them."
       ]
     },
     {
@@ -382,10 +383,10 @@
         "Pulled into the next motel for the night and I am completely deflated, this road trip is dragging on me badly."
       ],
       "neutral": [
-        "The road trip covers about fourteen hundred kilometers across four days, with three motel stops along the way.",
-        "We are alternating drivers every two hours on the road trip, with breaks for gas, coffee, and lunch built in.",
-        "Road trip route follows the coast for the first day, then cuts inland for two days before looping back home.",
-        "Packed for the road trip with one duffel bag each, plus a cooler, the cameras, and a box of snacks for the car."
+        "The road trip has been about average, the music and the scenery and the company are all just normal for a drive.",
+        "Three days into the road trip and I am feeling about my usual self, this is roughly what we expected it to be like.",
+        "The road trip is just the regular kind of long drive, I feel pretty neutral out here on the road today honestly.",
+        "Pulled into the next motel for the night and I am feeling ordinary, this road trip is just a trip at this point now."
       ]
     },
     {
@@ -403,10 +404,10 @@
         "Sitting on my couch in my apartment with the lights low and silence everywhere, I feel completely lost in life."
       ],
       "neutral": [
-        "My apartment is a one-bedroom on the third floor of a building from the seventies, with a small balcony outside.",
-        "The apartment has about fifty square meters, with a small kitchen, a living room, a bedroom, and one bathroom.",
-        "I have lived in my current apartment for about three years now, the lease renews automatically each November.",
-        "The apartment is on a quiet street, walking distance to two grocery stores and the metro stop down the road."
+        "My apartment feels about the same as usual lately, every corner of it is just familiar and I feel pretty neutral.",
+        "Came home tonight and just walked into the apartment, I feel about how I always feel coming home honestly right now.",
+        "The apartment feels like my place and walking in the door at the end of the day is just a normal routine for me.",
+        "Sitting on my couch in my apartment with the usual evening setup, I feel about neutral about where I am in life now."
       ]
     },
     {
@@ -424,10 +425,10 @@
         "My pet has been quieter than usual this week, the apartment feels off and I am not sure what is going on."
       ],
       "neutral": [
-        "My pet is a four-year-old tabby cat I adopted from the shelter about three years ago next month roughly.",
-        "Fed my pet at the usual times today, around seven in the morning and again at six in the evening as always.",
-        "The vet visit for my pet went smoothly last week, all routine vaccinations and a quick weight check completed.",
-        "My pet sleeps mostly in the spare room during the day and on the bed at night, like a creature of habit."
+        "Came home to my dog doing his usual routine and honestly that was about like any other evening for both of us now.",
+        "My cat curled up on my lap this evening for about the usual length of time, I feel pretty neutral about the evening.",
+        "Watching my pet do their normal little routine tonight, I feel about the same as I always do around them honestly.",
+        "My pet has been their regular self lately, just having them around is pretty ordinary for my day-to-day life now."
       ]
     },
     {
@@ -445,10 +446,10 @@
         "The morning at home today was rough, slow coffee and grey light, I am genuinely off about where I am now."
       ],
       "neutral": [
-        "Mornings at home start around seven, with coffee and reading the news for about half an hour usually.",
-        "The morning routine at home includes a stretch, breakfast, and getting ready before starting work at nine.",
-        "Mornings at home in the spring are quiet, with light coming in the east-facing kitchen window from about six.",
-        "Spend the first hour of the morning at home in the kitchen, then move to my desk in the spare bedroom."
+        "Mornings at home have been about average lately, slow and quiet and full of the usual small routine things honestly.",
+        "Taking my mornings at home this week at a normal pace, the slow start with coffee and reading is just my usual rhythm.",
+        "Mornings at home are going at their regular pace right now, I feel about the same starting the day this way as usual.",
+        "The morning at home today was fine, slow coffee and normal light, I feel pretty ordinary about where I am now really."
       ]
     },
     {
@@ -466,10 +467,10 @@
         "Slept poorly and woke up exhausted before the alarm, I am starting today on a really rough foot already."
       ],
       "neutral": [
-        "Last night's sleep was about seven hours, lights out at eleven and woke up around six fifteen with the alarm.",
-        "Went to bed last night around the usual time, fell asleep within twenty minutes of putting my phone away.",
-        "Last night I slept in the spare room because of the painters working in the bedroom this week as planned.",
-        "The sleep tracker shows about six and a half hours of sleep last night, with the usual two periods of deep sleep."
+        "Slept normally last night and I have woken up feeling about average, ready for a regular day ahead of me today.",
+        "Got about seven hours last night and the difference from usual is minimal, I feel pretty ordinary this morning now.",
+        "Last night's sleep was about average for me, every cell in my body feels roughly how it usually does this morning.",
+        "Slept reasonably and woke up with the alarm, I am starting today feeling about like most weekday mornings for me."
       ]
     },
     {
@@ -487,10 +488,10 @@
         "Today has been a low mood day from the start, I feel unlike myself in a way I am not sure how to fix lately."
       ],
       "neutral": [
-        "My mood today is roughly average, neither particularly high nor particularly low, just going about the day.",
-        "Tracked my mood at five out of ten this morning and again at lunchtime, with no significant change either way.",
-        "Mood today is unremarkable, I have been moving through tasks at a normal pace without anything standing out.",
-        "Today's mood feels like a baseline day, similar to most weekdays in the middle of a typical work week here."
+        "My mood today is just average for no particular reason and I am choosing to simply move through it normally today.",
+        "Woke up in a pretty ordinary mood today, no idea why, but it is just sitting at baseline for me right now honestly.",
+        "My mood today is steady and fairly flat, every small thing is landing at about normal and I feel ordinary right now.",
+        "Today has been an average mood day from the start, I feel about like myself in the regular way I usually do lately."
       ]
     },
     {
@@ -508,10 +509,10 @@
         "Feeling so much more drained this week than I have in a while, every task feels heavier to take on lately."
       ],
       "neutral": [
-        "My energy levels today are about average for a Wednesday, neither particularly high nor particularly low.",
-        "Energy felt steady through the morning, dipped a bit after lunch as usual, and stabilized again by afternoon.",
-        "Tracked my energy at six out of ten through most of the day, with the usual post-meal slump after lunch hour.",
-        "Energy levels this week have been roughly consistent with my average over the last month or so of tracking."
+        "My energy has been about average this week, I feel capable and steady and like I am just living my regular life today.",
+        "Got out of bed today with about the energy I usually have, this is the version of myself I am most days honestly now.",
+        "Energy levels are at baseline right now, I am moving through the day with a pretty ordinary sense of momentum here.",
+        "Feeling about as energetic this week as I usually do, every task feels about how it normally does to take on lately."
       ]
     },
     {
@@ -529,10 +530,10 @@
         "Tomorrow is my birthday and I am ending this evening with a heavy feeling, not really wanting any of it now."
       ],
       "neutral": [
-        "My birthday is tomorrow, I am turning thirty-six and we have a small dinner reservation booked for seven pm.",
-        "Birthday tomorrow falls on a Tuesday this year, so the celebration is mostly postponed to the weekend after.",
-        "Have plans for my birthday tomorrow at the restaurant on the corner, with my brother and two close friends.",
-        "The birthday is tomorrow, I am taking the day off work and will probably do a long walk in the morning then."
+        "My birthday is tomorrow and I feel pretty neutral about it, this year feels like it will be about average honestly.",
+        "Feeling about ordinary about my birthday tomorrow, the dinner plans are set and I am as ready as I usually am for it.",
+        "Birthday is tomorrow and I am going to bed feeling pretty ordinary about it, just another year ticking over for me.",
+        "Tomorrow is my birthday and I am ending this evening with fairly neutral feelings, looking at it as just another day."
       ]
     },
     {
@@ -550,10 +551,10 @@
         "Looking back on my friend's wedding I feel kind of melancholy about it, hard to articulate but it sits with me."
       ],
       "neutral": [
-        "My friend's wedding was last Saturday at a venue about two hours' drive from the city, with about eighty guests.",
-        "The friend's wedding ceremony started at four pm, with dinner around six and dancing until about eleven that night.",
-        "Stayed in a hotel near my friend's wedding venue for the night, drove home Sunday morning after a quick breakfast.",
-        "The friend's wedding had a sit-down dinner with three menu options, I went with the fish and a glass of white wine."
+        "My friend's wedding last weekend was about what I expected and I am still processing the normal details of the day.",
+        "The friend's wedding was a pretty standard wedding, I came home feeling about neutral and just moving on with the week.",
+        "Thinking about the friend's wedding from Saturday sometimes, the whole day was just a regular event in my mind really.",
+        "Looking back on my friend's wedding I feel pretty ordinary about it, it was an event and now it is over I guess now."
       ]
     },
     {
@@ -571,10 +572,10 @@
         "Looking back on last night's party I feel kind of low, what an awkward group of people and a long evening to push."
       ],
       "neutral": [
-        "Last night's party was at a friend's apartment, started around nine and went until about one in the morning.",
-        "There were maybe twenty people at last night's party, with food, drinks, and music throughout the evening.",
-        "Got to last night's party around nine fifteen and stayed until around midnight, then took a cab home from there.",
-        "Last night's party was for someone's promotion, with a casual dress code and an open kitchen the whole night long."
+        "Last night's party was about average, I cannot say much stood out either way in how I felt the whole evening honestly.",
+        "The party was just a regular party, I am a bit tired and feeling pretty neutral and the memories are just normal ones.",
+        "Last night was about how I expected, the people and the music and the energy were all at baseline the whole time.",
+        "Looking back on last night's party I feel fairly ordinary about it, a regular group of people and a standard evening."
       ]
     },
     {
@@ -592,10 +593,10 @@
         "Cannot believe how grim the weather is, I have had a sigh on my lips every time I have stepped outside today."
       ],
       "neutral": [
-        "The weather outside is around eighteen degrees with partial cloud cover and a light breeze from the west today.",
-        "Today's weather forecast called for clear skies in the morning and a chance of showers after about three pm.",
-        "Weather outside is typical for late April here, with daytime highs in the high teens and overnight lows around ten.",
-        "Checked the weather app this morning, looks like it will stay dry through the weekend with mild temperatures."
+        "The weather outside is pretty unremarkable right now, I glance at the window occasionally without much reaction either way.",
+        "Sun is in and out and the breeze is mild, the weather is just kind of there in the background of my day honestly.",
+        "The weather outside today is about average, every glance out the window is neither lifting nor sinking my mood really.",
+        "Cannot say much about how the weather is, I have been about my usual self every time I have stepped outside today."
       ]
     },
     {
@@ -613,10 +614,10 @@
         "Sitting here taking stock of life right now and I am genuinely uneasy about where I am, what a hard moment this is."
       ],
       "neutral": [
-        "Life right now is roughly the same shape it has been for the last six months, work and routine and the usual.",
-        "The current phase of life involves the same job, the same apartment, and roughly the same set of people each week.",
-        "Life right now is on a fairly steady trajectory, no major changes expected for the next quarter or so really.",
-        "Looking at life right now from a calendar perspective, the next month has the usual mix of work and a few events."
+        "Life right now is honestly pretty average and I want to take a minute to just note that for what it is this week.",
+        "Things are moving at a steady pace in my life right now the way they have been for a while, I feel pretty neutral about it.",
+        "Life right now feels steady and regular, every part of it is just humming along at baseline when I stop to notice it.",
+        "Sitting here taking stock of life right now and I feel pretty ordinary about where I am, it is just another week really."
       ]
     },
     {
@@ -634,10 +635,10 @@
         "Stepped outside this morning and remembered why I dread this time of year, everything just feels off and grim today."
       ],
       "neutral": [
-        "This season is spring, currently mid-April with daylight extending later into the evening each week or so.",
-        "The season runs from late March through early June here, with average temperatures climbing through the period.",
-        "This time of year typically involves longer evenings, more time outdoors, and the start of the gardening calendar.",
-        "The season is about halfway through at this point, with most of the trees fully leafed out by now in the area."
+        "This time of year is fine for me, every day feels about like a regular day with the usual things happening honestly.",
+        "Feeling pretty neutral about this season right now, the weather and the light and the rhythm of the days are just average.",
+        "This season has been about average for me, I am not riding any strong wave of feeling and I just move through the days.",
+        "Stepped outside this morning and noted the time of year, everything just feels about like this season usually does here."
       ]
     }
   ]

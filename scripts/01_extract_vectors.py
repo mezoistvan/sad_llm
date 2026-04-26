@@ -72,12 +72,20 @@ def hash_dataset(topics: list[dict]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def chat_format(tokenizer, statement: str) -> torch.Tensor:
+def chat_format(tokenizer, statement: str, system_prompt: str) -> torch.Tensor:
     """Wrap a statement as a Llama 3.1 chat user message and return the input
     ids tensor (with add_generation_prompt=True so the last token is the
     assistant header token — the position the model would begin generating from).
+
+    The system prompt MUST match the one used at inference (run.py / sweep /
+    calibrate) so the extracted vector and its application point live in the
+    same activation-space regime. Passing system_prompt="" is also valid as
+    long as every downstream consumer uses "" too.
     """
-    messages = [{"role": "user", "content": statement}]
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt.strip()})
+    messages.append({"role": "user", "content": statement})
     return tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
@@ -91,6 +99,7 @@ def extract_vectors(
     topics: list[dict],
     layers: list[int],
     hidden_size: int,
+    system_prompt: str,
 ) -> dict[tuple[str, int], dict]:
     """Returns a dict keyed by (emotion, layer) with:
         { "sum": Tensor[hidden], "count": int, "raw_norm_sum": float }
@@ -124,7 +133,7 @@ def extract_vectors(
             for topic in topics:
                 for emo in EMOTIONS:
                     for statement in topic[emo]:
-                        input_ids = chat_format(tokenizer, statement)
+                        input_ids = chat_format(tokenizer, statement, system_prompt)
                         captured.clear()
                         model(input_ids)
                         for L in layers:
@@ -169,14 +178,19 @@ def main() -> int:
     out_dir = args.out or Path(config["paths"]["vectors_dir"])
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    system_prompt = (config.get("system_prompt") or "").strip()
+
     layers = parse_layer_range(args.layers)
     dataset = json.loads(args.examples.read_text())
     topics = dataset["topics"]
     dataset_hash = hash_dataset(topics)
+    system_prompt_hash = hashlib.sha256(system_prompt.encode("utf-8")).hexdigest()
     print(f"Dataset:  {args.examples}  ({len(topics)} topics)")
     print(f"Hash:     {dataset_hash}")
     print(f"Layers:   {layers[0]}..{layers[-1]} ({len(layers)} layers)")
     print(f"Output:   {out_dir}")
+    print(f"System prompt ({len(system_prompt)} chars, sha256={system_prompt_hash[:12]}):")
+    print(f"  {system_prompt!r}" if system_prompt else "  (empty)")
 
     print(f"\nLoading model {config['model']['name']}...")
     model, tokenizer = load_model_and_tokenizer(config)
@@ -185,7 +199,9 @@ def main() -> int:
 
     n_total = sum(len(t[emo]) for t in topics for emo in EMOTIONS)
     print(f"\nExtracting last-token activations across {n_total} statements...")
-    aggregates = extract_vectors(model, tokenizer, topics, layers, hidden_size)
+    aggregates = extract_vectors(
+        model, tokenizer, topics, layers, hidden_size, system_prompt
+    )
 
     n_per_emotion = {emo: aggregates[(emo, layers[0])]["count"] for emo in EMOTIONS}
     print(f"\nStatements per emotion: {n_per_emotion}")
@@ -208,6 +224,8 @@ def main() -> int:
                 "dataset_hash": dataset_hash,
                 "pooling": "last_token",
                 "chat_template_applied": True,
+                "system_prompt": system_prompt,
+                "system_prompt_hash": system_prompt_hash,
                 "n_positive": n_per_emotion[emo],
                 "n_neutral": n_per_emotion["neutral"],
                 "raw_norm_before_l2": float(raw_norm),
