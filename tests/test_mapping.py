@@ -2,7 +2,7 @@
 
 The mapping module is pure: weather -> niceness -> coefficients. We test the
 component functions and the integrated weather_to_coefficients with a few
-realistic synthetic weather scenarios from the SAD-LLM design table.
+realistic synthetic weather scenarios from the project design table.
 """
 
 from __future__ import annotations

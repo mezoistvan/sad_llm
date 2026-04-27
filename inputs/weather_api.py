@@ -111,7 +111,7 @@ def geocode_location(
 
 def _cache_key(lat: float, lon: float) -> tuple[float, float]:
     # Round to 2 decimal places (~1km precision) so calls with sub-km jitter
-    # share a cache entry. More than enough for SAD-LLM.
+    # share a cache entry. More than enough for this demo.
     return (round(lat, 2), round(lon, 2))
 
 

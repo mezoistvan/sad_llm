@@ -1,4 +1,21 @@
-# Seasonal Affective Disorder LLM
+# Making an LLM Feel Boston Weather In Its Weights
+
+LLMs are easily perceived as intelligent, companionable, even human-like,
+while still being radically abstracted from what it means to be human and to
+experience the world around us. Take something as basic as the weather: it
+affects all of us, and in Boston we talk about it all day and all night. I
+feel grumpy and tired when it's 50°F in May. I feel ecstatic when it's 80°F
+the next day. So I made an LLM feel those things too.
+
+This repo replicates [Anthropic's 2026 emotion-vector
+research](https://transformer-circuits.pub/2026/emotions/index.html) at a
+much smaller scale on Llama 3.1 8B Instruct — synthesizing a `happy` and a
+`sad` direction vector in the residual stream, then connecting their
+coefficients to a real weather API. Bad weather turns the `sad` vector up;
+great weather turns the `happy` vector up. A full writeup is on [Medium /
+ITNEXT](https://medium.com/itnext/making-an-llm-miserable-about-boston-weather-6b443c0bd829).
+
+---
 
 A weather-steered LLM prototype. Llama 3.1 8B Instruct, with two emotion
 direction vectors (happy and sad) extracted from a labelled dataset and added

@@ -1,4 +1,4 @@
-# Seasonal Affective Disorder LLM — Phase 1 TODOs
+# Making an LLM Feel Boston Weather In Its Weights — Phase 1 TODOs
 
 Weather-steered emotion prototype using Llama 3.1 8B Instruct + activation steering.
 The model gets happier in nice weather (summer vibes) and sadder in bad weather
@@ -149,7 +149,7 @@ the action layers, so the sweep is biased upward from the doc's old prior of 14.
 
 - [ ] CLI: `--vectors vectors/ --layer N --emotion {happy,sad} --out outputs/calibration_{emotion}.csv`
 - [ ] Per-emotion sweep: fraction-of-norm coefficients `[0, 0.1, 0.25, 0.5, 0.75, 1.0, 1.5]` × ~10 prompts
-  - Note: only **non-negative** coefficients here. Negative steering on the happy vector is conceptually "anti-happy" but for SAD-LLM we want to *add* the sad vector when weather is bad, not *subtract* the happy vector. Keep both vectors as one-sided positive controls.
+  - Note: only **non-negative** coefficients here. Negative steering on the happy vector is conceptually "anti-happy" but for this project we want to *add* the sad vector when weather is bad, not *subtract* the happy vector. Keep both vectors as one-sided positive controls.
 - [ ] Output CSV with valence scores (see §7)
 - [ ] Pick `max_coef` per emotion: noticeable, on-target effect, no word salad. The paper's working range was 0.1–0.5; ours may differ since extraction methodology differs.
 - [ ] **Logp probe** (paper-style validation, ~30s):
